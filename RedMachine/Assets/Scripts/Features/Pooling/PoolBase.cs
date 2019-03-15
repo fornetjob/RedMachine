@@ -2,8 +2,8 @@
 
 namespace Assets.Scripts.Features.Pooling
 {
-    public class Pool<T>: IPool
-        where T: IPoolItem, new()
+    public class PoolBase<T> : IPool
+        where T : IPoolItem, new()
     {
         private Queue<T>
            _destroyed = new Queue<T>();
@@ -33,7 +33,7 @@ namespace Assets.Scripts.Features.Pooling
             return _dict[id];
         }
 
-        public T Create(int id)
+        protected T Create(int id)
         {
             T item;
 
@@ -64,11 +64,18 @@ namespace Assets.Scripts.Features.Pooling
             _dict.Remove(item.Id);
 
             _destroyed.Enqueue(itemToDestroy);
+
+            OnDestroy();
         }
 
         IPoolItem IPool.GetById(int id)
         {
             return _dict[id];
+        }
+
+        protected virtual void OnDestroy()
+        {
+
         }
     }
 }

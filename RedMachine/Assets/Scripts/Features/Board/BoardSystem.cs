@@ -2,6 +2,7 @@
 using Assets.Scripts.Features.Configs;
 using Assets.Scripts.Features.Move;
 using Assets.Scripts.Features.Unit;
+using UnityEngine;
 
 namespace Assets.Scripts.Features.Board
 {
@@ -47,6 +48,9 @@ namespace Assets.Scripts.Features.Board
 
         public void OnStart()
         {
+            Physics.autoSimulation = false;
+            Physics2D.autoSimulation = false;
+
             _config = _context.services.config.GetGameConfig();
 
             var boardEntity = _boardFactory.Create(_config);

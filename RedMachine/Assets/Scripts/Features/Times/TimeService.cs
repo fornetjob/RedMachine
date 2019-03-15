@@ -9,6 +9,16 @@ namespace Assets.Scripts.Features.Times
             return new Wait(this, seconds, isAutoReset);
         }
 
+        public void SetTimeScale(float timeScale)
+        {
+            Time.timeScale = timeScale;
+        }
+
+        public float GetTimeScale()
+        {
+            return Time.timeScale;
+        }
+
         public float GetTimeSinceLevelLoad()
         {
             return Time.timeSinceLevelLoad;

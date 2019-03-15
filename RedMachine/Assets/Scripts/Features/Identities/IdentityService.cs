@@ -7,7 +7,7 @@
 
         public void Attach(Context context)
         {
-            _entity = context.services.entityPool.NewEntity(0);
+            _entity = context.entities.NewEntity(0);
             _entity.Add(new IdentityComponent());
         }
 

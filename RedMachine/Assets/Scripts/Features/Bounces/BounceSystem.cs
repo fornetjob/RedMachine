@@ -1,15 +1,29 @@
 ﻿using Assets.Scripts.Features.Board;
 using Assets.Scripts.Features.Move;
+using Assets.Scripts.Features.Pooling;
 using Assets.Scripts.Features.Position;
 using Assets.Scripts.Features.Scale;
 using Assets.Scripts.Features.Unit;
-
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.Scripts.Features.Bounces
 {
     public class BounceSystem : IAttachContext, IFixedUpdateSystem
     {
+        #region Service
+
+        private EntityPool
+            _entityPool;
+
+        #endregion
+
+        #region Constants
+
+        private const float MinBallRadius = 0.2f;
+
+        #endregion
+
         #region Fields
 
         private Context
@@ -36,6 +50,8 @@ namespace Assets.Scripts.Features.Bounces
         {
             _context = context;
 
+            _entityPool = _context.entities;
+
             _positions = _context.services.pool.Provide<PositionComponent>();
             _radiuses = _context.services.pool.Provide<RadiusComponent>();
             _moves = _context.services.pool.Provide<MoveComponent>();
@@ -47,13 +63,17 @@ namespace Assets.Scripts.Features.Bounces
 
         public void OnFixedUpdate()
         {
+            List<int> entityToDestroy = new List<int>();
+
             for (int unitIndex = 0; unitIndex < _units.Items.Count; unitIndex++)
             {
                 var unit = _units.Items[unitIndex];
                 var move = _moves.GetById(unit.id);
                
                 var posItem = _positions.GetById(unit.id);
-                var radius = _radiuses.GetById(unit.id).value.radius;
+                var radiusItem = _radiuses.GetById(unit.id);
+
+                var radius = radiusItem.value.radius;
 
                 var pos = posItem.value.pos;
 
@@ -81,15 +101,19 @@ namespace Assets.Scripts.Features.Bounces
                 {
                     var otherUnit = _units.Items[otherUnitIndex];
 
+                    var otherRadiusItem = _radiuses.GetById(otherUnit.id);
+
                     var otherPos = _positions.GetById(otherUnit.id).value.pos;
-                    var otherRadius = _radiuses.GetById(otherUnit.id).value.radius;
+                    var otherRadius = otherRadiusItem.value.radius;
 
-                    if (Vector2.Distance(pos, otherPos) < radius + otherRadius)
+                    var dist = Vector2.Distance(pos, otherPos);
+
+                    if (dist < radius + otherRadius)
                     {
-                        var otherMove = _moves.GetById(otherUnit.id);
-
                         if (otherUnit.value.type == unit.value.type)
                         {
+                            var otherMove = _moves.GetById(otherUnit.id);
+
                             var direction = (pos - otherPos).normalized;
 
                             move.value.moveDirection = direction;
@@ -98,7 +122,36 @@ namespace Assets.Scripts.Features.Bounces
                             otherMove.value.moveDirection = direction * -1;
                             otherMove.Set(otherMove.value);
                         }
+                        else
+                        {
+                            var distLack = (radius + otherRadius - dist) / 2f;
+
+                            radiusItem.value.radius -= distLack;
+                            otherRadiusItem.value.radius -= distLack;
+
+                            if (radius < MinBallRadius
+                                || otherRadius < MinBallRadius)
+                            {
+                                entityToDestroy.Add(unit.id);
+                                entityToDestroy.Add(otherUnit.id);
+                            }
+                            else
+                            {
+                                radiusItem.Set(radiusItem.value);
+                                otherRadiusItem.Set(otherRadiusItem.value);
+                            }
+                        }
                     }
+                }
+            }
+
+            for (int i = 0; i < entityToDestroy.Count;i++)
+            {
+                var entityId = entityToDestroy[i];
+
+                if (_entityPool.ContainsId(entityId))
+                {
+                    _entityPool.GetById(entityId).Destroy();
                 }
             }
         }

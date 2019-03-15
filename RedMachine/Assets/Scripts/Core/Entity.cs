@@ -10,13 +10,12 @@ public class Entity: IPoolItem, IAttachContext
 
     public int id;
 
-    public ComponentProperty<T> Add<T>(T value)
+    public Component<T> Add<T>(T value)
         where T : IComponent, new()
     {
         var pool = _pool.Provide<T>();
 
-        var item = pool.Create(id);
-        item.Set(value);
+        var item = pool.Create(id, value);
 
         return item;
     }
@@ -29,7 +28,7 @@ public class Entity: IPoolItem, IAttachContext
         return pool.ContainsId(id);
     }
 
-    public ComponentProperty<T> Get<T>()
+    public Component<T> Get<T>()
         where T : IComponent, new()
     {
         var pool = _pool.Provide<T>();

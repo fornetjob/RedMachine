@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts.Features;
+using Assets.Scripts.Features.Pooling;
 using System.Collections.Generic;
 
 public class Context: IFixedUpdateSystem, IUpdateSystem
@@ -17,9 +18,12 @@ public class Context: IFixedUpdateSystem, IUpdateSystem
     {
         services = new ContextServices();
 
+        entities = new EntityPool(this);
+
         services.Attach(this);
     }
 
+    public EntityPool entities;
     public ContextServices services;
 
     public void RemoveSystem(ISystem system)

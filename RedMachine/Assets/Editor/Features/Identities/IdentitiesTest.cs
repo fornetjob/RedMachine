@@ -7,18 +7,18 @@ public class IdentitiesTest
     {
         var context = new Context();
 
-        var entity = context.services.entityPool.NewEntity();
+        var entity = context.entities.NewEntity();
 
         Assert.AreEqual(entity.id, 1);
 
         Assert.AreEqual(context.services.identity.GetId(), 1);
 
-        context.services.entityPool.NewEntity();
+        context.entities.NewEntity();
 
         Assert.AreEqual(context.services.identity.GetId(), 2);
 
-        context.services.entityPool.NewEntity();
-        context.services.entityPool.NewEntity();
+        context.entities.NewEntity();
+        context.entities.NewEntity();
 
         Assert.AreEqual(context.services.identity.GetId(), 4);
     }

@@ -90,7 +90,7 @@ namespace Assets.Scripts.Features.Unit
             {
                 _context.RemoveSystem(this);
 
-                var entityPool = _context.services.entityPool;
+                var entityPool = _context.entities;
 
                 for (int i = 0; i < _units.Items.Count; i++)
                 {

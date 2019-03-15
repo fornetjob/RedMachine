@@ -17,7 +17,6 @@ namespace Assets.Scripts.Features
         public ConfigService config;
         public IdentityService identity;
         public PoolService pool;
-        public EntityPoolService entityPool;
         public TimeService time;
         public RandomService random;
 
@@ -25,7 +24,6 @@ namespace Assets.Scripts.Features
         {
             resources = AddService(new ResourcesService());
             pool = AddService(new PoolService());
-            entityPool = AddService(new EntityPoolService());
             identity = AddService(new IdentityService());
 
             config = AddService(new ConfigService(resources));

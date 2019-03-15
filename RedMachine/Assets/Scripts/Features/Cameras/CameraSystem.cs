@@ -42,7 +42,7 @@ namespace Assets.Scripts.Features.Cameras
 
         private void ResizeCamera()
         {
-            var size = _config.GetBoardSize() + Vector2.one * _config.maxUnitRadius * 2f;
+            var size = _config.GetBoardSize() + Vector2.one * _config.maxUnitRadius * 2f + Vector2.one * 10;
 
             size[0] /= _camera.aspect;
 

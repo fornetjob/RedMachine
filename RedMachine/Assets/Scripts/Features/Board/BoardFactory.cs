@@ -18,7 +18,7 @@ namespace Assets.Scripts.Features.Board
 
         public Entity Create(GameConfig config)
         {
-            var boardEntity = _context.services.entityPool.NewEntity();
+            var boardEntity = _context.entities.NewEntity();
             boardEntity.Add(new BoardActionComponent { type = BoardActionType.Add });
 
             var boardObj = new GameObject("Board");
@@ -59,7 +59,7 @@ namespace Assets.Scripts.Features.Board
         {
             var wallObj = new GameObject("Wall");
 
-            var wallEntity = _context.services.entityPool.NewEntity();
+            var wallEntity = _context.entities.NewEntity();
 
             wallEntity.Add(new WallComponent { normal = normal, bound = new Bounds(center, size) });
 

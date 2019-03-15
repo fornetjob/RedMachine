@@ -2,6 +2,7 @@
 using Assets.Scripts.Features.Configs;
 using Assets.Scripts.Features.Board;
 using UnityEngine;
+using Assets.Scripts.Features.UI;
 
 namespace Assets.Scripts
 {
@@ -17,6 +18,7 @@ namespace Assets.Scripts
         {
             var context = new Context();
 
+            context.AddSystem(new UISystem());
             context.AddSystem(new CameraSystem());
             context.AddSystem(new BoardSystem());
 

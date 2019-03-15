@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-public class ComponentProperty<T> : IPoolItem
+public class Component<T> : IPoolItem
     where T : IComponent, new()
 {
     private IPool
@@ -18,7 +18,7 @@ public class ComponentProperty<T> : IPoolItem
 
     #endregion
 
-    public ComponentProperty<T> AddListener(IComponentListener<T> listener)
+    public Component<T> AddListener(IComponentListener<T> listener)
     {
         _listeners.Add(listener);
 

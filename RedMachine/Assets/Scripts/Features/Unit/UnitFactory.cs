@@ -11,7 +11,7 @@ namespace Assets.Scripts.Features.Unit
     {
         #region Services
 
-        private EntityPoolService
+        private EntityPool
             _entityPool;
 
         #endregion
@@ -26,7 +26,7 @@ namespace Assets.Scripts.Features.Unit
         {
             _context = context;
 
-            _entityPool = context.services.entityPool;
+            _entityPool = context.entities;
 
             _sprites = new WeakDictionary<string, Sprite>(path => _context.services.resources.ReadResourceFrom<Sprite>(path));
         }

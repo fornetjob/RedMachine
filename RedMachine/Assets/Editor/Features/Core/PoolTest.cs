@@ -12,7 +12,7 @@ public class ComponentPoolTest
 
         var pool = context.services.pool.Provide<MoveComponent>();
 
-        var set = pool.Create(0);
+        var set = pool.Create(0, new MoveComponent());
 
         Assert.AreEqual(pool.Items.Count, 1);
 
@@ -26,11 +26,11 @@ public class ComponentPoolTest
     {
         var context = new Context();
 
-        var pool = context.services.entityPool;
+        var pool = context.entities;
 
         var entity = pool.NewEntity();
 
-        Assert.IsTrue(pool.IsExists(entity.id));
+        Assert.IsTrue(pool.ContainsId(entity.id));
 
         entity.Add(new PositionComponent());
         entity.Add(new MoveComponent());
@@ -43,7 +43,7 @@ public class ComponentPoolTest
 
         entity.Destroy();
 
-        Assert.IsFalse(pool.IsExists(entity.id));
+        Assert.IsFalse(pool.ContainsId(entity.id));
 
         Assert.AreEqual(posPool.Items.Count, 0);
         Assert.AreEqual(movePool.Items.Count, 0);

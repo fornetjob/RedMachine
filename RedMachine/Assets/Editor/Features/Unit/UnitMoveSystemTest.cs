@@ -14,7 +14,7 @@ public class MoveSystemTest
         var system = new MoveSystem();
         system.Attach(context);
 
-        var entity = context.services.entityPool.NewEntity();
+        var entity = context.entities.NewEntity();
 
         entity.Add(new PositionComponent
         {
