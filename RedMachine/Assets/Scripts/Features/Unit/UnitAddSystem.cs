@@ -90,6 +90,23 @@ namespace Assets.Scripts.Features.Unit
             {
                 _context.RemoveSystem(this);
 
+                var entityPool = _context.services.entityPool;
+
+                for (int i = 0; i < _units.Items.Count; i++)
+                {
+                    var unit = _units.Items[i];
+
+                    var entity = entityPool.GetById(unit.id);
+
+                    var radian = _random.Range(0, 360) * Mathf.Deg2Rad;
+
+                    entity.Add(new MoveComponent
+                    {
+                        speed = _random.Range(_gameConfig.minUnitSpeed, _gameConfig.maxUnitSpeed),
+                        moveDirection = new Vector2(Mathf.Cos(radian), Mathf.Sin(radian))
+                    });
+                }
+
                 _context.services.pool.Provide<BoardActionComponent>().Single()
                     .Set((action) => action.type = BoardActionType.Move);
             }

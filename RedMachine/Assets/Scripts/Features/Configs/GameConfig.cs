@@ -15,6 +15,11 @@ namespace Assets.Scripts.Features.Configs
         public float minUnitSpeed;
         public float maxUnitSpeed;
 
+        //public Bounds GetBoardBound()
+        //{
+        //    return new Bounds(Vector3.zero, GetBoardSize() - Vector2.one * maxUnitRadius);
+        //}
+
         public Vector2 GetBeginPos()
         {
             return GetBoardSize() / 2f / -1f;

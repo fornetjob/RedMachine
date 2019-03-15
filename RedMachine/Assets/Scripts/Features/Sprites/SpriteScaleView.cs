@@ -1,9 +1,10 @@
-﻿using UnityEngine;
+﻿using Assets.Scripts.Features.Scale;
+using UnityEngine;
 
 namespace Assets.Scripts.Features.Sprites
 {
     [RequireComponent(typeof(SpriteRenderer))]
-    public class SpriteScaleView : ViewBase, IComponentListener<SpriteRadiusComponent>, IComponentListener<SpriteSizeComponent>
+    public class SpriteScaleView : ViewBase, IComponentListener<RadiusComponent>, IComponentListener<SizeComponent>
     {
         private SpriteRenderer
             _rend;
@@ -13,12 +14,12 @@ namespace Assets.Scripts.Features.Sprites
             _rend = gameObject.GetComponent<SpriteRenderer>();
         }
 
-        public void OnChanged(SpriteRadiusComponent newValue)
+        public void OnChanged(RadiusComponent newValue)
         {
             SetSize(Vector2.one * newValue.radius * 2);
         }
 
-        public void OnChanged(SpriteSizeComponent newValue)
+        public void OnChanged(SizeComponent newValue)
         {
             SetSize(newValue.size);
         }

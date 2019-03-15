@@ -40,7 +40,7 @@ namespace Assets.Scripts.Features.Board
                     break;
                 case BoardActionType.Move:
                     _context.AddSystem(new MoveSystem());
-                    _context.AddSystem(new BounceDetectionSystem());
+                    _context.AddSystem(new BounceSystem());
                     break;
             }
         }

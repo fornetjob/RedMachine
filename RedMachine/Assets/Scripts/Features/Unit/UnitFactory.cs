@@ -1,6 +1,7 @@
 ﻿using Assets.Scripts.Features.Object;
 using Assets.Scripts.Features.Pooling;
 using Assets.Scripts.Features.Position;
+using Assets.Scripts.Features.Scale;
 using Assets.Scripts.Features.Sprites;
 using UnityEngine;
 
@@ -47,7 +48,7 @@ namespace Assets.Scripts.Features.Unit
             entity.Add(new SpriteComponent { sprite = sprite })
                 .AddListener(unitObj.AddView<SpriteRendererView>());
 
-            entity.Add(new SpriteRadiusComponent { radius = radius })
+            entity.Add(new RadiusComponent { radius = radius })
                 .AddListener(unitObj.AddView<SpriteScaleView>());
 
             return entity;

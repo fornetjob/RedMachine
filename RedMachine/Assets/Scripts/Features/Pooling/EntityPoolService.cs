@@ -25,17 +25,9 @@ namespace Assets.Scripts.Features.Pooling
             _identity = context.services.identity;
         }
 
-        public int Count
+        public Entity GetById(int id)
         {
-            get
-            {
-                return _entities.Items.Count;
-            }
-        }
-
-        public List<Entity> GetEntities()
-        {
-            return _entities.Items;
+            return _entities.GetById(id);
         }
 
         public bool IsExists(int id)

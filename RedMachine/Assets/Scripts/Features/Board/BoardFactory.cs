@@ -1,5 +1,6 @@
 ﻿using Assets.Scripts.Features.Configs;
 using Assets.Scripts.Features.Position;
+using Assets.Scripts.Features.Scale;
 using Assets.Scripts.Features.Sprites;
 using UnityEngine;
 
@@ -30,7 +31,7 @@ namespace Assets.Scripts.Features.Board
 
             var boardSize = config.GetBoardSize();
 
-            boardEntity.Add(new SpriteSizeComponent { size = boardSize })
+            boardEntity.Add(new SizeComponent { size = boardSize })
                 .AddListener(boardObj.AddView<SpriteScaleView>());
 
             var wallSize = boardSize + Vector2.one;
@@ -46,19 +47,21 @@ namespace Assets.Scripts.Features.Board
             var sizeX = new Vector2(wallSize.x + 1, 1);
             var sizeY = new Vector2(1, wallSize.y - 1f);
 
-            CreateWall(beginPosX, sizeX);
-            CreateWall(beginPosY, sizeY);
-            CreateWall(beginPosX + new Vector2(0, wallSize.y), sizeX);
-            CreateWall(beginPosY + new Vector2(wallSize.x, 0), sizeY);
+            CreateWall(Vector2.up, beginPosX, sizeX);
+            CreateWall(Vector2.right, beginPosY, sizeY);
+            CreateWall(Vector2.down, beginPosX + new Vector2(0, wallSize.y), sizeX);
+            CreateWall(Vector2.left, beginPosY + new Vector2(wallSize.x, 0), sizeY);
 
             return boardEntity;
         }
 
-        private void CreateWall(Vector2 center, Vector2 size)
+        private void CreateWall(Vector2 normal, Vector2 center, Vector2 size)
         {
             var wallObj = new GameObject("Wall");
 
             var wallEntity = _context.services.entityPool.NewEntity();
+
+            wallEntity.Add(new WallComponent { normal = normal, bound = new Bounds(center, size) });
 
             wallEntity.Add(new SpriteComponent
             {
@@ -68,7 +71,7 @@ namespace Assets.Scripts.Features.Board
             wallEntity.Add(new PositionComponent { pos = center })
                 .AddListener(wallObj.AddView<PositionView>());
 
-            wallEntity.Add(new SpriteSizeComponent { size = size })
+            wallEntity.Add(new SizeComponent { size = size })
                 .AddListener(wallObj.AddView<SpriteScaleView>());
         }
     }

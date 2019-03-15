@@ -1,6 +1,7 @@
 ﻿using Assets.Scripts.Features.Board;
 using Assets.Scripts.Features.Position;
 using Assets.Scripts.Features.Times;
+using UnityEngine;
 
 namespace Assets.Scripts.Features.Move
 {
@@ -13,11 +14,11 @@ namespace Assets.Scripts.Features.Move
 
         #endregion
 
+        //private Bounds
+        //    _fieldBound;
+
         private ComponentPool<MoveComponent>
             _moves;
-
-        private ComponentPool<WallComponent>
-            _walls;
 
         private ComponentPool<PositionComponent>
             _positions;
@@ -27,8 +28,9 @@ namespace Assets.Scripts.Features.Move
             _time = context.services.time;
 
             _moves = context.services.pool.Provide<MoveComponent>();
-            _walls = context.services.pool.Provide<WallComponent>();
             _positions = context.services.pool.Provide<PositionComponent>();
+
+            //_fieldBound = context.services.config.GetGameConfig().GetBoardBound();
         }
 
         public void OnFixedUpdate()
@@ -44,24 +46,9 @@ namespace Assets.Scripts.Features.Move
 
                 posItem.value.pos += moveItem.value.moveDirection * speed * time;
 
-                //var radiusPos = posItem.value.pos + moveItem.value.moveDirection * 
-
-                //for (int wallIndex = 0; wallIndex < _walls.Items.Count; wallIndex++)
+                //if (_fieldBound.Contains(posItem.value.pos) == false)
                 //{
-                //    var wall = _walls.Items[wallIndex];
-
-                //    if (wall.value.bound.Contains(posItem.value.pos))
-                //    {
-
-                //    }
-                //}
-
-                //if (Vector3.Distance(posItem.value.pos, moveItem.value.moveDirection) < Mathf.Epsilon)
-                //{
-                //    posItem.value.pos = moveItem.value.moveDirection;
-                    
-                //    moveItem.Destroy();
-                //    i--;
+                //    posItem.value.pos = _fieldBound.ClosestPoint(posItem.value.pos);
                 //}
 
                 posItem.Set(posItem.value);
