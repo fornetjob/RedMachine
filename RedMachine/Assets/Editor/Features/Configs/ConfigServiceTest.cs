@@ -1,4 +1,4 @@
-﻿using Assets.Scripts.Features.Configs;
+﻿using Assets.Scripts.Features.Serialize;
 using Assets.Scripts.Features.Resource;
 
 using NUnit.Framework;
@@ -12,14 +12,12 @@ public class ConfigServiceTest
     {
         string text = @"{""gameAreaWidth"":50,""gameAreaHeight"":50,""unitSpawnDelay"":500,""numUnitsToSpawn"":50,""minUnitRadius"":0.5,""maxUnitRadius"":1,""minUnitSpeed"":5.0,""maxUnitSpeed"":10.0}";
 
-        var resourcesService = new ResourcesServiceMock(new Dictionary<string, string>
+        var context = new Context(new ResourcesServiceMock(new Dictionary<string, string>
         {
             { ResourcesAssets.Configs_data, text }
-        });
+        }));
 
-        var configService = new ConfigService(resourcesService);
-
-        var config = configService.GetGameConfig();
+        var config = context.services.serialize.GetGameConfig();
 
         Assert.AreEqual(config.gameAreaWidth, 50);
         Assert.AreEqual(config.gameAreaHeight, 50);
@@ -30,9 +28,9 @@ public class ConfigServiceTest
         Assert.AreEqual(config.minUnitSpeed, 5f);
         Assert.AreEqual(config.maxUnitSpeed, 10f);
 
-        configService = new ConfigService(new ResourcesService());
+        context = new Context();
 
-        config = configService.GetGameConfig();
+        config = context.services.serialize.GetGameConfig();
 
         Assert.IsNotNull(config);
     }

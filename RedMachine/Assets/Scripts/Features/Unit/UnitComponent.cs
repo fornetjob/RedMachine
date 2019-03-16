@@ -1,6 +1,6 @@
 ﻿namespace Assets.Scripts.Features.Unit
 {
-    public class UnitComponent:IComponent
+    public class UnitComponent: ComponentBase
     {
         public UnitType type;
     }

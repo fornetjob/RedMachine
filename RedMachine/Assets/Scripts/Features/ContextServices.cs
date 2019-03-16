@@ -1,45 +1,61 @@
-﻿using Assets.Scripts.Features.Configs;
+﻿using Assets.Scripts.Features.Serialize;
 using Assets.Scripts.Features.Identities;
 using Assets.Scripts.Features.Pooling;
 using Assets.Scripts.Features.Randoms;
 using Assets.Scripts.Features.Resource;
 using Assets.Scripts.Features.Times;
+using Assets.Scripts.Features.Views;
 using System.Collections.Generic;
 
 namespace Assets.Scripts.Features
 {
     public class ContextServices: IService, IAttachContext
     {
+        #region Fields
+
         private List<IService>
             _services = new List<IService>();
 
-        public ResourcesService resources;
-        public ConfigService config;
-        public IdentityService identity;
-        public PoolService pool;
-        public TimeService time;
-        public RandomService random;
+        #endregion
 
-        public ContextServices()
+        #region ctor
+
+        public ContextServices(params IService[] services)
         {
-            resources = AddService(new ResourcesService());
-            pool = AddService(new PoolService());
-            identity = AddService(new IdentityService());
+            _services.AddRange(services);
 
-            config = AddService(new ConfigService(resources));
+            AddService<IResourcesService>(new ResourcesService());
+            AddService(new PoolService());
+            AddService(new IdentityService());
+            AddService(new SerializeService());
+            AddService(new TimeService());
+            AddService(new RandomService());
+            AddService(new ViewService());
 
-            time = AddService(new TimeService());
-
-            random = AddService(new RandomService());
+            resources = ProvideService<IResourcesService>();
+            pool = ProvideService<PoolService>();
+            identity = ProvideService<IdentityService>();
+            serialize = ProvideService<SerializeService>();
+            time = ProvideService<TimeService>();
+            random = ProvideService<RandomService>();
+            view = ProvideService<ViewService>();
         }
 
-        private T AddService<T>(T service)
-            where T:IService
-        {
-            _services.Add(service);
+        #endregion
 
-            return service;
-        }
+        #region Properties
+
+        public readonly IResourcesService resources;
+        public readonly SerializeService serialize;
+        public readonly IdentityService identity;
+        public readonly PoolService pool;
+        public readonly TimeService time;
+        public readonly RandomService random;
+        public readonly ViewService view;
+
+        #endregion
+
+        #region Public methods
 
         public void Attach(Context context)
         {
@@ -53,5 +69,31 @@ namespace Assets.Scripts.Features
                 }
             }
         }
+
+        #endregion
+
+        #region Private methods
+
+        private T ProvideService<T>()
+        {
+            return (T)_services.Find(p => p is T);
+        }
+
+        private T AddService<T>(T service)
+            where T:IService
+        {
+            var existService = ProvideService<T>();
+
+            if (existService != null)
+            {
+                return existService;
+            }
+
+            _services.Add(service);
+
+            return service;
+        }
+
+        #endregion
     }
 }

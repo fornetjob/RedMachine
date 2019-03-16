@@ -4,21 +4,23 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts.Features.UI
 {
-    public class GameHudView : ViewBase, IPoolListener<UnitComponent>
+    public class GameHudView : ViewBase, IListener<ComponentPool<UnitComponent>>
     {
         #region Bindings
 
         [SerializeField]
         private LayoutElement 
-            _redElement;
+            _redElement = null;
 
         [SerializeField]
-        private LayoutElement 
-            _blueElement;
+        private LayoutElement
+            _blueElement = null;
 
         #endregion
 
-        public void OnChange(ComponentPool<UnitComponent> pool)
+        #region IListener<ComponentPool<UnitComponent>>
+
+        void IListener<ComponentPool<UnitComponent>>.OnChanged(ComponentPool<UnitComponent> pool)
         {
             int blueCount = 0;
             int redCount = 0;
@@ -27,7 +29,7 @@ namespace Assets.Scripts.Features.UI
             {
                 var item = pool.Items[i];
 
-                switch (item.value.type)
+                switch (item.type)
                 {
                     case UnitType.Blue:
                         blueCount++;
@@ -36,7 +38,7 @@ namespace Assets.Scripts.Features.UI
                         redCount++;
                         break;
                     default:
-                        throw new System.ArgumentOutOfRangeException(item.value.type.ToString());
+                        throw new System.ArgumentOutOfRangeException(item.type.ToString());
                 }
             }
 
@@ -50,5 +52,7 @@ namespace Assets.Scripts.Features.UI
                 _blueElement.flexibleWidth = blueCount;
             }
         }
+
+        #endregion
     }
 }

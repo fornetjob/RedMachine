@@ -3,7 +3,7 @@
     public interface IResourcesService : IService
     {
         string ReadStringFrom(string path);
-        T ReadResourceFrom<T>(string path) 
+        T ReadFrom<T>(string path) 
             where T : UnityEngine.Object;
     }
 }

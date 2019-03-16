@@ -1,21 +1,13 @@
-﻿using Assets.Scripts.Features.Board;
-using Assets.Scripts.Features.Position;
-using Assets.Scripts.Features.Times;
-using UnityEngine;
+﻿using Assets.Scripts.Features.Position;
 
 namespace Assets.Scripts.Features.Move
 {
     public class MoveSystem : IAttachContext, IFixedUpdateSystem
     {
-        #region Services
+        #region Fields
 
-        private TimeService
-            _time;
-
-        #endregion
-
-        //private Bounds
-        //    _fieldBound;
+        private Context
+            _context;
 
         private ComponentPool<MoveComponent>
             _moves;
@@ -23,36 +15,40 @@ namespace Assets.Scripts.Features.Move
         private ComponentPool<PositionComponent>
             _positions;
 
-        public void Attach(Context context)
+        private float
+            _fixedTime;
+
+        #endregion
+
+        #region IAttachContext
+
+        void IAttachContext.Attach(Context context)
         {
-            _time = context.services.time;
+            _context = context;
+
+            _fixedTime = _context.services.time.GetFixedDeltaTime();
 
             _moves = context.services.pool.Provide<MoveComponent>();
             _positions = context.services.pool.Provide<PositionComponent>();
-
-            //_fieldBound = context.services.config.GetGameConfig().GetBoardBound();
         }
+
+        #endregion
+
+        #region IFixedUpdateSystem
 
         public void OnFixedUpdate()
         {
-            var time = _time.GetFixedDeltaTime();
-
             for (int moveIndex = 0; moveIndex < _moves.Items.Count; moveIndex++)
             {
                 var moveItem = _moves.Items[moveIndex];
-                var posItem = _positions.GetById(moveItem.id);
+                var posItem = _positions.GetById(moveItem.Id);
 
-                var speed = moveItem.value.speed;
+                var speed = moveItem.speed;
 
-                posItem.value.pos += moveItem.value.moveDirection * speed * time;
-
-                //if (_fieldBound.Contains(posItem.value.pos) == false)
-                //{
-                //    posItem.value.pos = _fieldBound.ClosestPoint(posItem.value.pos);
-                //}
-
-                posItem.Set(posItem.value);
+                posItem.Position += moveItem.moveDirection * speed * _fixedTime;
             }
         }
+
+        #endregion
     }
 }

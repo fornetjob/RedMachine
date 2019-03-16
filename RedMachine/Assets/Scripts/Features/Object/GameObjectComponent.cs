@@ -1,13 +1,12 @@
-﻿using Assets.Scripts.Features.Pooling;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Assets.Scripts.Features.Object
 {
-    public class GameObjectComponent:IComponent, IDestroy
+    public class GameObjectComponent: ComponentBase
     {
         public GameObject obj;
 
-        void IDestroy.Destroy()
+        protected override void OnDestroy()
         {
             GameObject.Destroy(obj);
         }

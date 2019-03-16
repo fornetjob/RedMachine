@@ -1,10 +1,11 @@
-﻿namespace Assets.Scripts.Features.Pooling
+﻿public interface IPool
 {
-    public interface IPool
-    {
-        bool ContainsId(int id);
-        IPoolItem GetById(int id);
+    void ApplyChanges();
+    void OnChanged(int id);
 
-        void Destroy(IPoolItem item);
-    }
+    bool ContainsId(int id);
+    IComponent GetById(int id);
+
+    void Destroy(IComponent item);
+    void DestroyAll();
 }

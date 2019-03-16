@@ -1,38 +1,62 @@
-﻿using Assets.Scripts.Features.Configs;
-using Assets.Scripts.Features.Position;
+﻿using Assets.Scripts.Features.Position;
 using Assets.Scripts.Features.Scale;
 using Assets.Scripts.Features.Sprites;
+using Assets.Scripts.Features.Views;
+using Assets.Scripts.Features.Resource;
+
 using UnityEngine;
 
 namespace Assets.Scripts.Features.Board
 {
     public class BoardFactory
     {
-        private Context
+        #region Services
+
+        private readonly ViewService
+            _view;
+
+        private readonly IResourcesService
+            _resources;
+
+        #endregion
+
+        #region Fields
+
+        private readonly Context
             _context;
+
+        #endregion
+
+        #region ctor
 
         public BoardFactory(Context context)
         {
             _context = context;
+
+            _view = _context.services.view;
+            _resources = _context.services.resources;
         }
 
-        public Entity Create(GameConfig config)
-        {
-            var boardEntity = _context.entities.NewEntity();
-            boardEntity.Add(new BoardActionComponent { type = BoardActionType.Add });
+        #endregion
 
+        #region Public methods
+
+        public Entity Create(Vector2 boardSize)
+        {
             var boardObj = new GameObject("Board");
 
-            boardEntity.Add(new SpriteComponent
-            {
-                sprite = _context.services.resources.ReadResourceFrom<Sprite>(ResourcesAssets.Sprites_field),
-                sortingOrder = -1
-            }).AddListener(boardObj.AddView<SpriteRendererView>());
+            var boardEntity = _context.entities.Create()
+                .AddListener(_view.Add<SpriteRendererView>(boardObj))
+                .AddListener(_view.Add<SpriteSizeView>(boardObj));
 
-            var boardSize = config.GetBoardSize();
+            boardEntity.Add<BoardActionComponent>()
+                .Type = BoardActionType.Add;
 
-            boardEntity.Add(new SizeComponent { size = boardSize })
-                .AddListener(boardObj.AddView<SpriteScaleView>());
+            boardEntity.Add<SpriteComponent>()
+                .Set(_resources.ReadFrom<Sprite>(ResourcesAssets.Sprites_field), -1);
+
+            boardEntity.Add<SizeComponent>()
+                .Size = boardSize;
 
             var wallSize = boardSize + Vector2.one;
 
@@ -55,24 +79,32 @@ namespace Assets.Scripts.Features.Board
             return boardEntity;
         }
 
+        #endregion
+
+        #region Private methods
+
         private void CreateWall(Vector2 normal, Vector2 center, Vector2 size)
         {
             var wallObj = new GameObject("Wall");
 
-            var wallEntity = _context.entities.NewEntity();
+            var wallEntity = _context.entities.Create()
+                .AddListener(_view.Add<SpriteRendererView>(wallObj))
+                .AddListener(_view.Add<PositionView>(wallObj))
+                .AddListener(_view.Add<SpriteSizeView>(wallObj));
 
-            wallEntity.Add(new WallComponent { normal = normal, bound = new Bounds(center, size) });
+            wallEntity.Add<WallComponent>()
+                .Set(normal, new Bounds(center, size));
 
-            wallEntity.Add(new SpriteComponent
-            {
-                sprite = _context.services.resources.ReadResourceFrom<Sprite>(ResourcesAssets.Sprites_wall),
-            }).AddListener(wallObj.AddView<SpriteRendererView>());
+            wallEntity.Add<SpriteComponent>()
+                .Set(_resources.ReadFrom<Sprite>(ResourcesAssets.Sprites_wall));
 
-            wallEntity.Add(new PositionComponent { pos = center })
-                .AddListener(wallObj.AddView<PositionView>());
+            wallEntity.Add<PositionComponent>()
+                .Position = center;
 
-            wallEntity.Add(new SizeComponent { size = size })
-                .AddListener(wallObj.AddView<SpriteScaleView>());
+            wallEntity.Add<SizeComponent>()
+                .Size = size;
         }
+
+        #endregion
     }
 }

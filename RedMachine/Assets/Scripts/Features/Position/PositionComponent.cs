@@ -2,8 +2,27 @@
 
 namespace Assets.Scripts.Features.Position
 {
-    public class PositionComponent :IComponent
+    public class PositionComponent : ComponentBase
     {
-        public Vector2 pos;
+        #region Fields
+
+        private Vector2
+            _pos;
+
+        #endregion
+
+        public Vector2 Position
+        {
+            get
+            {
+                return _pos;
+            }
+            set
+            {
+                _pos = value;
+
+                MarkAsChanged();
+            }
+        }
     }
 }

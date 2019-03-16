@@ -4,7 +4,9 @@ namespace Assets.Scripts.Features.Resource
 {
     public class ResourcesService: IResourcesService
     {
-        public T ReadResourceFrom<T>(string path)
+        #region Public methods
+
+        public T ReadFrom<T>(string path)
             where T:UnityEngine.Object
         {
             return Resources.Load<T>(path);
@@ -12,7 +14,9 @@ namespace Assets.Scripts.Features.Resource
 
         public string ReadStringFrom(string path)
         {
-            return ReadResourceFrom<TextAsset>(path).text;
+            return ReadFrom<TextAsset>(path).text;
         }
+
+        #endregion
     }
 }

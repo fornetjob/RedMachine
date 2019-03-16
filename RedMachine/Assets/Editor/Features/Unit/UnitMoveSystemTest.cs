@@ -11,38 +11,16 @@ public class MoveSystemTest
     {
         var context = new Context();
 
-        var system = new MoveSystem();
-        system.Attach(context);
+        var entity = context.entities.Create();
 
-        var entity = context.entities.NewEntity();
-
-        entity.Add(new PositionComponent
-        {
-            pos = Vector2.zero
-        });
+        entity.Add<PositionComponent>()
+            .Position = Vector2.zero;
 
         var moveDirection = Vector2.up;
 
-        entity.Add(new MoveComponent
-        {
-            moveDirection = moveDirection,
-            speed = 1
-        });
+        entity.Add<MoveComponent>()
+            .Set(moveDirection, 1);
 
         Assert.IsTrue(entity.IsExist<MoveComponent>());
-
-        //int count = 0;
-
-        //while (entity.IsExist<MoveComponent>()
-        //    && count < 300000)
-        //{
-        //    system.OnFixedUpdate();
-
-        //    count++;
-        //}
-
-        //Assert.IsFalse(entity.IsExist<MoveComponent>());
-
-        //Assert.AreEqual(entity.Get<PositionComponent>().value.pos, moveTo);
     }
 }

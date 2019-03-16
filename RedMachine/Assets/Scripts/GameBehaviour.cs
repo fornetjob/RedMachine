@@ -1,5 +1,5 @@
 ﻿using Assets.Scripts.Features.Cameras;
-using Assets.Scripts.Features.Configs;
+using Assets.Scripts.Features.Serialize;
 using Assets.Scripts.Features.Board;
 using UnityEngine;
 using Assets.Scripts.Features.UI;
@@ -8,22 +8,35 @@ namespace Assets.Scripts
 {
     public class GameBehaviour : MonoBehaviour
     {
+        #region Fields
+
+        private Context
+            _context;
+
+        private IFixedLateUpdateSystem
+            _fixedLateUpdateSystem;
+
         private IFixedUpdateSystem
-            _fixedSystem;
+            _fixedupdateSystem;
 
         private IUpdateSystem
             _updateSystem;
 
+        #endregion
+
+        #region Game
+
         private void Start()
         {
-            var context = new Context();
+            _context = new Context();
 
-            context.AddSystem(new UISystem());
-            context.AddSystem(new CameraSystem());
-            context.AddSystem(new BoardSystem());
+            _context.systems.Add(new UISystem());
+            _context.systems.Add(new CameraSystem());
+            _context.systems.Add(new BoardSystem());
 
-            _fixedSystem = context;
-            _updateSystem = context;
+            _fixedLateUpdateSystem = _context.systems;
+            _fixedupdateSystem = _context.systems;
+            _updateSystem = _context.systems;
         }
 
         private void Update()
@@ -33,7 +46,10 @@ namespace Assets.Scripts
 
         private void FixedUpdate()
         {
-            _fixedSystem.OnFixedUpdate();
+            _fixedupdateSystem.OnFixedUpdate();
+            _fixedLateUpdateSystem.OnFixedLateUpdate();
         }
+
+        #endregion
     }
 }

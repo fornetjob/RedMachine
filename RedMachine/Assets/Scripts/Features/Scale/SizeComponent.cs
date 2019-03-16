@@ -2,8 +2,23 @@
 
 namespace Assets.Scripts.Features.Scale
 {
-    public class SizeComponent : IComponent
+    public class SizeComponent : ComponentBase
     {
-        public Vector2 size;
+        private Vector2
+            _size;
+
+        public Vector2 Size
+        {
+            get
+            {
+                return _size;
+            }
+            set
+            {
+                _size = value;
+
+                MarkAsChanged();
+            }
+        }
     }
 }

@@ -4,6 +4,8 @@ namespace Assets.Scripts.Features.Randoms
 {
     public class RandomService:IService
     {
+        #region Public methods
+
         public bool RandomBool()
         {
             return Range(0, 2) == 0;
@@ -18,5 +20,7 @@ namespace Assets.Scripts.Features.Randoms
         {
             return Random.Range(min, max);
         }
+
+        #endregion
     }
 }

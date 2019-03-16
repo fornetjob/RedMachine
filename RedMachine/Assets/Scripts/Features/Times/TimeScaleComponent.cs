@@ -1,7 +1,22 @@
 ﻿namespace Assets.Scripts.Features.Times
 {
-    public class TimeScaleComponent:IComponent
+    public class TimeScaleComponent: ComponentBase
     {
-        public float scale;
+        private float 
+            _scale;
+
+        public float Scale
+        {
+            get
+            {
+                return _scale;
+            }
+            set
+            {
+                _scale = value;
+
+                MarkAsChanged();
+            }
+        }
     }
 }

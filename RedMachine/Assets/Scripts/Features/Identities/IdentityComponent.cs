@@ -1,7 +1,9 @@
 ﻿namespace Assets.Scripts.Features.Identities
 {
-    public class IdentityComponent:IComponent
+    [Component(IsIdentity = false)]
+    [System.Serializable]
+    public class IdentityComponent: ComponentBase
     {
-        public int Id;
+        public int Identity;
     }
 }

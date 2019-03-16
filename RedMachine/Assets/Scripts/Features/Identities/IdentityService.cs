@@ -2,29 +2,35 @@
 {
     public class IdentityService: IService, IAttachContext
     {
-        private Entity
-            _entity;
+        #region Fields
 
-        public void Attach(Context context)
+        private ComponentPool<IdentityComponent>
+            _identityPool;
+
+        #endregion
+
+        #region IAttachContext
+
+        void IAttachContext.Attach(Context context)
         {
-            _entity = context.entities.NewEntity(0);
-            _entity.Add(new IdentityComponent());
+            _identityPool = context.services.pool.Provide<IdentityComponent>();
+
+            _identityPool.Create();
         }
 
-        public int GetId()
-        {
-            return _entity.Get<IdentityComponent>().value.Id;
-        }
+        #endregion
+
+        #region Public methods
 
         public int NewId()
         {
-            var identity = _entity.Get<IdentityComponent>();
+            var identity = _identityPool.Single();
 
-            identity.value.Id++;
+            identity.Identity++;
 
-            identity.Set(identity.value);
-
-            return identity.value.Id;
+            return identity.Identity;
         }
+
+        #endregion
     }
 }

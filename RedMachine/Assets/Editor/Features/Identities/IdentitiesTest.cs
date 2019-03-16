@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿using Assets.Scripts.Features.Identities;
+
+using NUnit.Framework;
 
 public class IdentitiesTest
 {
@@ -7,19 +9,21 @@ public class IdentitiesTest
     {
         var context = new Context();
 
-        var entity = context.entities.NewEntity();
+        var entity = context.entities.Create();
 
-        Assert.AreEqual(entity.id, 1);
+        Assert.AreEqual(entity.Id, 1);
 
-        Assert.AreEqual(context.services.identity.GetId(), 1);
+        var idItem = context.services.pool.Provide<IdentityComponent>().Single();
 
-        context.entities.NewEntity();
+        Assert.AreEqual(idItem.Identity, 1);
 
-        Assert.AreEqual(context.services.identity.GetId(), 2);
+        context.entities.Create();
 
-        context.entities.NewEntity();
-        context.entities.NewEntity();
+        Assert.AreEqual(idItem.Identity, 2);
 
-        Assert.AreEqual(context.services.identity.GetId(), 4);
+        context.entities.Create();
+        context.entities.Create();
+
+        Assert.AreEqual(idItem.Identity, 4);
     }
 }

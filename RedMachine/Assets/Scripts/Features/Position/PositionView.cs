@@ -2,19 +2,31 @@
 
 namespace Assets.Scripts.Features.Position
 {
-    public class PositionView : ViewBase, IComponentListener<PositionComponent>
+    public class PositionView : ViewBase, IListener<PositionComponent>
     {
+        #region Bindings
+
         private Transform
             _tr = null;
+
+        #endregion
+
+        #region Overriden methods
 
         protected override void OnBegin()
         {
             _tr = gameObject.transform;
         }
 
-        public void OnChanged(PositionComponent newValue)
+        #endregion
+
+        #region IListener<PositionComponent>
+
+        void IListener<PositionComponent>.OnChanged(PositionComponent newValue)
         {
-            _tr.position = newValue.pos;
+            _tr.position = newValue.Position;
         }
+
+        #endregion
     }
 }

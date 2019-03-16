@@ -1,5 +1,5 @@
 ﻿using Assets.Scripts.Features.Board;
-using Assets.Scripts.Features.Configs;
+using Assets.Scripts.Features.Serialize;
 using Assets.Scripts.Features.Move;
 using Assets.Scripts.Features.Randoms;
 
@@ -45,7 +45,9 @@ namespace Assets.Scripts.Features.Unit
 
         #endregion
 
-        public void Attach(Context context)
+        #region IAttachContext
+
+        void IAttachContext.Attach(Context context)
         {
             _context = context;
 
@@ -56,9 +58,13 @@ namespace Assets.Scripts.Features.Unit
             _units = _context.services.pool.Provide<UnitComponent>();
         }
 
-        public void OnStart()
+        #endregion
+
+        #region IStartSystem
+
+        void IStartSystem.OnStart()
         {
-            _gameConfig = _context.services.config.GetGameConfig();
+            _gameConfig = _context.services.serialize.GetGameConfig();
             _tick = _context.services.time.WaitTo(_gameConfig.unitSpawnDelay / 1000f, true);
 
             var unitRadiusOffset = Vector2.one * _gameConfig.maxUnitRadius;
@@ -68,7 +74,11 @@ namespace Assets.Scripts.Features.Unit
             _maxBoardPos = _beginPos + _gameConfig.GetBoardSize() - unitRadiusOffset * 2;
         }
 
-        public void OnUpdate()
+        #endregion
+
+        #region IUpdateSystem
+
+        void IUpdateSystem.OnUpdate()
         {
             if (_units.Items.Count < _gameConfig.numUnitsToSpawn)
             {
@@ -76,7 +86,9 @@ namespace Assets.Scripts.Features.Unit
                 {
                     var radius = _random.Range(_gameConfig.minUnitRadius, _gameConfig.maxUnitRadius);
 
-                    var pos = _beginPos + new Vector2(_random.Range(0, _gameConfig.gameAreaWidth), _random.Range(0, _gameConfig.gameAreaHeight));
+                    var pos = _beginPos + new Vector2(
+                        _random.Range(0, _gameConfig.gameAreaWidth), 
+                        _random.Range(0, _gameConfig.gameAreaHeight));
 
                     pos[0] = pos.x + radius > _maxBoardPos.x ? _maxBoardPos.x : pos.x;
                     pos[1] = pos.y + radius > _maxBoardPos.y ? _maxBoardPos.y : pos.y;
@@ -88,7 +100,7 @@ namespace Assets.Scripts.Features.Unit
             }
             else
             {
-                _context.RemoveSystem(this);
+                _context.systems.Remove(this);
 
                 var entityPool = _context.entities;
 
@@ -96,20 +108,20 @@ namespace Assets.Scripts.Features.Unit
                 {
                     var unit = _units.Items[i];
 
-                    var entity = entityPool.GetById(unit.id);
+                    var entity = entityPool.GetById(unit.Id);
 
                     var radian = _random.Range(0, 360) * Mathf.Deg2Rad;
 
-                    entity.Add(new MoveComponent
-                    {
-                        speed = _random.Range(_gameConfig.minUnitSpeed, _gameConfig.maxUnitSpeed),
-                        moveDirection = new Vector2(Mathf.Cos(radian), Mathf.Sin(radian))
-                    });
+                    entity.Add<MoveComponent>()
+                        .Set(new Vector2(Mathf.Cos(radian), Mathf.Sin(radian)),
+                            _random.Range(_gameConfig.minUnitSpeed, _gameConfig.maxUnitSpeed));
                 }
 
                 _context.services.pool.Provide<BoardActionComponent>().Single()
-                    .Set((action) => action.type = BoardActionType.Move);
+                    .Type = BoardActionType.Move;
             }
         }
+
+        #endregion
     }
 }

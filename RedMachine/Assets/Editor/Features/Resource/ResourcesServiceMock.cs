@@ -12,7 +12,7 @@ public class ResourcesServiceMock : IResourcesService
         _textsDict = textsDict;
     }
 
-    public T ReadResourceFrom<T>(string path) where T : Object
+    public T ReadFrom<T>(string path) where T : Object
     {
         throw new System.NotImplementedException();
     }

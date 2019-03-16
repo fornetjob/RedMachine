@@ -1,7 +1,22 @@
 ﻿namespace Assets.Scripts.Features.Scale
 {
-    public class RadiusComponent:IComponent
+    public class RadiusComponent:ComponentBase
     {
-        public float radius;
+        private float 
+            _radius;
+
+        public float Radius
+        {
+            get
+            {
+                return _radius;
+            }
+            set
+            {
+                _radius = value;
+
+                MarkAsChanged();
+            }
+        }
     }
 }

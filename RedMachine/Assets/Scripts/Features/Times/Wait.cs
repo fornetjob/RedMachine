@@ -2,6 +2,8 @@
 
 public class Wait
 {
+    #region Fields
+
     private TimeService
         _time;
 
@@ -17,6 +19,10 @@ public class Wait
     private bool
         _isCheck;
 
+    #endregion
+
+    #region ctor
+
     public Wait(TimeService time, float timeInterval, bool isAutoReset)
     {
         _time = time;
@@ -24,15 +30,12 @@ public class Wait
         _timeInterval = timeInterval;
         _isAutoReset = isAutoReset;
 
-        Next();
+        Reset();
     }
 
-    private void Next()
-    {
-        _endTime = _time.GetTimeSinceLevelLoad() + _timeInterval;
+    #endregion
 
-        _isCheck = false;
-    }
+    #region Public methods
 
     public bool IsCheck()
     {
@@ -47,7 +50,7 @@ public class Wait
 
             if (_isAutoReset)
             {
-                Next();
+                Reset();
             }
 
             return true;
@@ -55,4 +58,17 @@ public class Wait
 
         return false;
     }
+
+    #endregion
+
+    #region Private methods
+
+    private void Reset()
+    {
+        _endTime = _time.GetTimeSinceLevelLoad() + _timeInterval;
+
+        _isCheck = false;
+    }
+
+    #endregion
 }

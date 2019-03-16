@@ -1,80 +1,33 @@
-﻿using Assets.Scripts.Features;
+﻿using Assets.Scripts.Core;
+using Assets.Scripts.Features;
+using Assets.Scripts.Features.Events;
 using Assets.Scripts.Features.Pooling;
-using System.Collections.Generic;
 
-public class Context: IFixedUpdateSystem, IUpdateSystem
+public class Context
 {
-    #region Fields
+    #region ctor
 
-    private List<IFixedUpdateSystem>
-        _fixedUpdateSystems = new List<IFixedUpdateSystem>();
+    public Context(params IService[] mockServices)
+    {
+        systems = new SystemsComposite(this);
 
-    private List<IUpdateSystem>
-        _updateSystems = new List<IUpdateSystem>();
+        services = new ContextServices(mockServices);
+
+        entities = new ComponentPool<Entity>(this);
+
+        services.Attach(this);
+
+        systems.Add(new EventSystem());
+        systems.Add(new PoolSystem());
+    }
 
     #endregion
 
-    public Context()
-    {
-        services = new ContextServices();
+    #region Properties
 
-        entities = new EntityPool(this);
+    public readonly SystemsComposite systems;
+    public readonly ComponentPool<Entity> entities;
 
-        services.Attach(this);
-    }
-
-    public EntityPool entities;
-    public ContextServices services;
-
-    public void RemoveSystem(ISystem system)
-    {
-        if (system is IFixedUpdateSystem)
-        {
-            _fixedUpdateSystems.Remove((IFixedUpdateSystem)system);
-        }
-
-        if (system is IUpdateSystem)
-        {
-            _updateSystems.Remove((IUpdateSystem)system);
-        }
-    }
-
-    public void AddSystem(ISystem system)
-    {
-        if (system is IAttachContext)
-        {
-            ((IAttachContext)system).Attach(this);
-        }
-
-        if (system is IStartSystem)
-        {
-            ((IStartSystem)system).OnStart();
-        }
-
-        if (system is IFixedUpdateSystem)
-        {
-            _fixedUpdateSystems.Add((IFixedUpdateSystem)system);
-        }
-
-        if (system is IUpdateSystem)
-        {
-            _updateSystems.Add((IUpdateSystem)system);
-        }
-    }
-
-    void IFixedUpdateSystem.OnFixedUpdate()
-    {
-        for (int i = 0; i < _fixedUpdateSystems.Count; i++)
-        {
-            _fixedUpdateSystems[i].OnFixedUpdate();
-        }
-    }
-
-    void IUpdateSystem.OnUpdate()
-    {
-        for (int i = 0; i < _updateSystems.Count; i++)
-        {
-            _updateSystems[i].OnUpdate();
-        }
-    }
+    #endregion
+    public readonly ContextServices services;
 }

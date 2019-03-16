@@ -4,6 +4,8 @@ namespace Assets.Scripts.Features.Times
 {
     public class TimeService:IService
     {
+        #region Public methods
+
         public Wait WaitTo(float seconds, bool isAutoReset)
         {
             return new Wait(this, seconds, isAutoReset);
@@ -33,5 +35,7 @@ namespace Assets.Scripts.Features.Times
         {
             return Time.deltaTime;
         }
+
+        #endregion
     }
 }

@@ -1,17 +1,11 @@
-﻿using Assets.Scripts.Features.Times;
-using Assets.Scripts.Features.Unit;
-using UnityEngine;
+﻿using Assets.Scripts.Features.Events;
+using Assets.Scripts.Features.Times;
 
 namespace Assets.Scripts.Features.UI
 {
-    public class UISystem : IAttachContext, IStartSystem
+    public class UISystem : IAttachContext, IStartSystem, IEventListener
     {
-        #region Services
-
-        private TimeService
-            _time;
-
-        #endregion
+        #region Fields
 
         private Context
             _context;
@@ -19,30 +13,71 @@ namespace Assets.Scripts.Features.UI
         private Entity
             _timeScaleEntity;
 
-        public void Attach(Context context)
+        #endregion
+
+        #region IAttachContext
+
+        void IAttachContext.Attach(Context context)
         {
             _context = context;
 
-            _time = _context.services.time;
+            _context.services.pool.Provide<EventListenerComponent>()
+                .Create().value = this;
         }
 
-        public void OnStart()
+        #endregion
+
+        #region IEventListener
+
+        void IEventListener.OnEvent(EventComponent e)
         {
-            _context.services.pool.Provide<UnitComponent>()
-                .AddListener(GameObject.Find("Canvas/GameHud").GetView<GameHudView>());
-
-            var timeScaleView = GameObject.Find("Canvas/TimeScale").GetView<TimeScaleView>();
-
-            _timeScaleEntity = _context.entities.NewEntity();
-            _timeScaleEntity.Add(new TimeScaleComponent { scale = _time.GetTimeScale() })
-                .AddListener(timeScaleView);
-
-            timeScaleView.OnSliderValueChanged += (timeScale) =>
+            switch (e.name)
             {
-                _time.SetTimeScale(timeScale);
+                case TimeScaleView.TimeScaleChanged:
+                    var timeScale = (float)e.value;
 
-                _timeScaleEntity.Get<TimeScaleComponent>().Set(value => value.scale = timeScale);
-            };
+                    _context.services.time.SetTimeScale(timeScale);
+                    _timeScaleEntity.Get<TimeScaleComponent>().Scale = timeScale;
+                    break;
+                case ButtonView.ButtonClick:
+                    var type = (ButtonActionType)e.value;
+
+                    switch (type)
+                    {
+                        case ButtonActionType.New:
+                            break;
+                        case ButtonActionType.Load:
+                            _context.services.serialize.LoadGame();
+                            break;
+                        case ButtonActionType.Save:
+                            _context.services.serialize.SaveGame(); 
+                            break;
+                    }
+
+                    break;
+            }
         }
+
+        #endregion
+
+        #region IStartSystem
+
+        void IStartSystem.OnStart()
+        {
+            //_context.services.pool.Provide<UnitComponent>()
+            //    .AddListener(_context.services.view.Attach<GameHudView>("Canvas/GameHud"));
+
+            _context.services.view.Attach<ButtonView>("Canvas/NewButton");
+            _context.services.view.Attach<ButtonView>("Canvas/LoadButton");
+            _context.services.view.Attach<ButtonView>("Canvas/SaveButton");
+
+            _timeScaleEntity = _context.entities.Create()
+                .AddListener(_context.services.view.Attach<TimeScaleView>("Canvas/TimeScale"));
+
+            _timeScaleEntity.Add<TimeScaleComponent>()
+                .Scale = _context.services.time.GetTimeScale();
+        }
+
+        #endregion
     }
 }

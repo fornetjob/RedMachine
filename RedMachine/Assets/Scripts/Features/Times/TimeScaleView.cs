@@ -1,11 +1,17 @@
 ﻿using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace Assets.Scripts.Features.Times
 {
-    public class TimeScaleView : ViewBase, IComponentListener<TimeScaleComponent>
+    [RequireComponent(typeof(Slider))]
+    public class TimeScaleView : ViewBase, IListener<TimeScaleComponent>
     {
+        #region Constants
+
+        public const string TimeScaleChanged = "TimeScaleView_TimeScaleChanged";
+
+        #endregion
+
         #region Bindings
 
         [SerializeField]
@@ -18,18 +24,34 @@ namespace Assets.Scripts.Features.Times
 
         #endregion
 
-        public UnityAction<float> OnSliderValueChanged;
+        #region Overriden methods
 
         protected override void OnBegin()
         {
-            _slider.onValueChanged.AddListener((value)=>OnSliderValueChanged(value));
+            _slider.onValueChanged.AddListener(OnSliderValueChanged);
         }
 
-        public void OnChanged(TimeScaleComponent newValue)
+        #endregion
+
+        #region Event handlers
+
+        private void OnSliderValueChanged(float value)
         {
-            _slider.value = newValue.scale;
-
-            _valueText.text = string.Format("{0:N2}x", newValue.scale);
+            _eventPool.Create()
+                .Set(TimeScaleChanged, value);
         }
+
+        #endregion
+
+        #region IListener<TimeScaleComponent>
+
+        void IListener<TimeScaleComponent>.OnChanged(TimeScaleComponent newValue)
+        {
+            _slider.value = newValue.Scale;
+
+            _valueText.text = string.Format("{0:N2}x", newValue.Scale);
+        }
+
+        #endregion
     }
 }

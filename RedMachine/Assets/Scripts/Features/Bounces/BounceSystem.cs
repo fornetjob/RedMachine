@@ -1,19 +1,19 @@
 ﻿using Assets.Scripts.Features.Board;
 using Assets.Scripts.Features.Move;
-using Assets.Scripts.Features.Pooling;
 using Assets.Scripts.Features.Position;
 using Assets.Scripts.Features.Scale;
 using Assets.Scripts.Features.Unit;
 using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace Assets.Scripts.Features.Bounces
 {
-    public class BounceSystem : IAttachContext, IFixedUpdateSystem
+    public class BounceSystem : IAttachContext, IFixedLateUpdateSystem
     {
         #region Service
 
-        private EntityPool
+        private ComponentPool<Entity>
             _entityPool;
 
         #endregion
@@ -44,9 +44,14 @@ namespace Assets.Scripts.Features.Bounces
         private ComponentPool<UnitComponent>
             _units;
 
+        private List<int> 
+            _entityToDestroyBuffer = new List<int>();
+
         #endregion
 
-        public void Attach(Context context)
+        #region IAttachContext
+
+        void IAttachContext.Attach(Context context)
         {
             _context = context;
 
@@ -61,99 +66,107 @@ namespace Assets.Scripts.Features.Bounces
             _walls = _context.services.pool.Provide<WallComponent>();
         }
 
-        public void OnFixedUpdate()
-        {
-            List<int> entityToDestroy = new List<int>();
+        #endregion
 
+        #region IFixedLateUpdateSystem
+
+        void IFixedLateUpdateSystem.OnFixedLateUpdate()
+        {
             for (int unitIndex = 0; unitIndex < _units.Items.Count; unitIndex++)
             {
                 var unit = _units.Items[unitIndex];
-                var move = _moves.GetById(unit.id);
+                var move = _moves.GetById(unit.Id);
                
-                var posItem = _positions.GetById(unit.id);
-                var radiusItem = _radiuses.GetById(unit.id);
+                var posItem = _positions.GetById(unit.Id);
+                var radiusItem = _radiuses.GetById(unit.Id);
 
-                var radius = radiusItem.value.radius;
+                var radius = radiusItem.Radius;
 
-                var pos = posItem.value.pos;
+                var pos = posItem.Position;
+
+                #region Check walls
 
                 for (int wallIndex = 0; wallIndex < _walls.Items.Count; wallIndex++)
                 {
                     var wall = _walls.Items[wallIndex];
 
-                    var closestPoint = wall.value.bound.ClosestPoint(pos);
+                    var closestPoint = wall.bound.ClosestPoint(pos);
 
                     var dist = Vector2.Distance(closestPoint, pos);
 
                     if (dist < radius)
                     {
-                        Vector2 dir = Vector2.Reflect(move.value.moveDirection, wall.value.normal);
+                        Vector2 dir = Vector2.Reflect(move.moveDirection, wall.normal);
 
-                        move.value.moveDirection = dir;
-                        move.Set(move.value);
+                        move.moveDirection = dir;
 
-                        posItem.value.pos += dir * (radius - dist);
-                        posItem.Set(posItem.value);
+                        posItem.Position += dir * (radius - dist);
                     }
                 }
+
+                #endregion
+
+                #region Check other units
 
                 for (int otherUnitIndex = unitIndex + 1; otherUnitIndex < _units.Items.Count; otherUnitIndex++)
                 {
                     var otherUnit = _units.Items[otherUnitIndex];
 
-                    var otherRadiusItem = _radiuses.GetById(otherUnit.id);
+                    var otherRadiusItem = _radiuses.GetById(otherUnit.Id);
 
-                    var otherPos = _positions.GetById(otherUnit.id).value.pos;
-                    var otherRadius = otherRadiusItem.value.radius;
+                    var otherPos = _positions.GetById(otherUnit.Id).Position;
+                    var otherRadius = otherRadiusItem.Radius;
 
                     var dist = Vector2.Distance(pos, otherPos);
 
                     if (dist < radius + otherRadius)
                     {
-                        if (otherUnit.value.type == unit.value.type)
+                        if (otherUnit.type == unit.type)
                         {
-                            var otherMove = _moves.GetById(otherUnit.id);
+                            var otherMove = _moves.GetById(otherUnit.Id);
 
                             var direction = (pos - otherPos).normalized;
 
-                            move.value.moveDirection = direction;
-                            move.Set(move.value);
-
-                            otherMove.value.moveDirection = direction * -1;
-                            otherMove.Set(otherMove.value);
+                            move.moveDirection = direction;
+                            otherMove.moveDirection = direction * -1;
                         }
                         else
                         {
                             var distLack = (radius + otherRadius - dist) / 2f;
 
-                            radiusItem.value.radius -= distLack;
-                            otherRadiusItem.value.radius -= distLack;
+                            radiusItem.Radius -= distLack;
+                            otherRadiusItem.Radius -= distLack;
 
                             if (radius < MinBallRadius
                                 || otherRadius < MinBallRadius)
                             {
-                                entityToDestroy.Add(unit.id);
-                                entityToDestroy.Add(otherUnit.id);
-                            }
-                            else
-                            {
-                                radiusItem.Set(radiusItem.value);
-                                otherRadiusItem.Set(otherRadiusItem.value);
+                                _entityToDestroyBuffer.Add(unit.Id);
+                                _entityToDestroyBuffer.Add(otherUnit.Id);
                             }
                         }
                     }
                 }
+
+                #endregion
             }
 
-            for (int i = 0; i < entityToDestroy.Count;i++)
+            #region Destroy units
+
+            for (int i = 0; i < _entityToDestroyBuffer.Count;i++)
             {
-                var entityId = entityToDestroy[i];
+                var entityId = _entityToDestroyBuffer[i];
 
                 if (_entityPool.ContainsId(entityId))
                 {
                     _entityPool.GetById(entityId).Destroy();
                 }
             }
+
+            _entityToDestroyBuffer.Clear();
+
+            #endregion
         }
+
+        #endregion
     }
 }
