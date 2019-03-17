@@ -15,6 +15,11 @@ namespace Assets.Scripts.Features.Serialize
         public float minUnitSpeed;
         public float maxUnitSpeed;
 
+        public Bounds GetBoardSqueezeRadius(float radius)
+        {
+            return new Bounds(Vector3.zero, GetBoardSize() - Vector2.one * radius * 2f);
+        }
+
         public Vector2 GetBeginPos()
         {
             return GetBoardSize() / 2f / -1f;

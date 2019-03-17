@@ -34,6 +34,11 @@ namespace Assets.Scripts.Features.Pooling
 
         #region Public methods
 
+        public List<IPool> GetPools()
+        {
+            return _pools;
+        }
+
         public ComponentPool<T> Provide<T>()
             where T : IComponent, new()
         {

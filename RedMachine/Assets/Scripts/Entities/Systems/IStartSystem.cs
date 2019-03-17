@@ -1,4 +1,4 @@
 ﻿public interface IStartSystem : ISystem
 {
-    void OnStart();
+    void OnStart(Context context);
 }

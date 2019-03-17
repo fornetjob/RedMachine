@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.Features.Cameras
 {
-    public class CameraSystem : IAttachContext, IStartSystem, IUpdateSystem
+    public class CameraSystem : IStartSystem, IListener<WaitComponent>
     {
         #region Fields
 
@@ -16,38 +16,31 @@ namespace Assets.Scripts.Features.Cameras
         private float
             _aspect;
 
-        private Wait
-            _resizeCameraTick;
-
-        #endregion
-
-        #region IAttachContext
-
-        void IAttachContext.Attach(Context context)
-        {
-            _resizeCameraTick = context.services.time.WaitTo(1, true);
-            _config = context.services.serialize.GetGameConfig();
-        }
-
         #endregion
 
         #region IStartSystem
 
-        void IStartSystem.OnStart()
+        void IStartSystem.OnStart(Context context)
         {
+            _config = context.services.serialize.GetGameConfig();
+
             _camera = Camera.main;
 
             ResizeCamera();
+
+            context.entities.Create()
+                .AddListener(this)
+                .Add<WaitComponent>()
+                .Set(1, true);
         }
 
         #endregion
 
-        #region IUpdateSystem
+        #region IListener<WaitComponent>
 
-        void IUpdateSystem.OnUpdate()
+        public void OnChanged(WaitComponent value)
         {
-            if (_resizeCameraTick.IsCheck()
-               && _aspect != _camera.aspect)
+            if (_aspect != _camera.aspect)
             {
                 ResizeCamera();
             }

@@ -2,7 +2,7 @@
 
 namespace Assets.Scripts.Features.Pooling
 {
-    public class PoolSystem : IFixedLateUpdateSystem, IAttachContext, IListener<List<IPool>>
+    public class PoolSystem : IStartSystem, ILateUpdateSystem, IListener<List<IPool>>
     {
         #region Fields
 
@@ -11,10 +11,12 @@ namespace Assets.Scripts.Features.Pooling
 
         #endregion
 
-        #region IAttachContext
+        #region IStartSystem
 
-        void IAttachContext.Attach(Context context)
+        void IStartSystem.OnStart(Context context)
         {
+            _pools = context.services.pool.GetPools();
+
             context.services.pool.OnPoolsChanged.AddListener(this);
         }
 
@@ -29,9 +31,9 @@ namespace Assets.Scripts.Features.Pooling
 
         #endregion
 
-        #region IFixedLateUpdateSystem
+        #region ILateUpdateSystem
 
-        void IFixedLateUpdateSystem.OnFixedLateUpdate()
+        void ILateUpdateSystem.OnLateUpdate()
         {
             for (int i = 0; i < _pools.Count; i++)
             {

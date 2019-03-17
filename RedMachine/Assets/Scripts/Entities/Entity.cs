@@ -30,6 +30,16 @@ public class Entity: ComponentBase, IAttachContext
         return this;
     }
 
+    public Entity RemoveListener<T>(params IListener<T>[] listeners)
+       where T : IComponent, new()
+    {
+        var pool = _pool.Provide<T>();
+
+        pool.RemoveListeners(Id, listeners);
+
+        return this;
+    }
+
     public T Add<T>()
         where T : IComponent, new()
     {

@@ -2,6 +2,7 @@
 using Assets.Scripts.Features.Move;
 using Assets.Scripts.Features.Position;
 using Assets.Scripts.Features.Scale;
+using Assets.Scripts.Features.Serialize;
 using Assets.Scripts.Features.Unit;
 using System.Collections.Generic;
 
@@ -9,7 +10,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.Features.Bounces
 {
-    public class BounceSystem : IAttachContext, IFixedLateUpdateSystem
+    public class BounceSystem : IStartSystem, ILateUpdateSystem
     {
         #region Service
 
@@ -38,8 +39,8 @@ namespace Assets.Scripts.Features.Bounces
         private ComponentPool<MoveComponent>
             _moves;
 
-        private ComponentPool<WallComponent>
-            _walls;
+        private ComponentPool<BoardSqueezeBoundComponent>
+            _bounds;
 
         private ComponentPool<UnitComponent>
             _units;
@@ -47,11 +48,20 @@ namespace Assets.Scripts.Features.Bounces
         private List<int> 
             _entityToDestroyBuffer = new List<int>();
 
+        private GameConfig
+            _gameConfig;
+
         #endregion
 
-        #region IAttachContext
+        #region Properties
 
-        void IAttachContext.Attach(Context context)
+        public bool IsEnabled;
+
+        #endregion
+
+        #region IStartSystem
+
+        void IStartSystem.OnStart(Context context)
         {
             _context = context;
 
@@ -60,53 +70,46 @@ namespace Assets.Scripts.Features.Bounces
             _positions = _context.services.pool.Provide<PositionComponent>();
             _radiuses = _context.services.pool.Provide<RadiusComponent>();
             _moves = _context.services.pool.Provide<MoveComponent>();
+            _bounds = _context.services.pool.Provide<BoardSqueezeBoundComponent>();
 
             _units = _context.services.pool.Provide<UnitComponent>();
 
-            _walls = _context.services.pool.Provide<WallComponent>();
+            _gameConfig = _context.services.serialize.GetGameConfig();
         }
 
         #endregion
 
-        #region IFixedLateUpdateSystem
+        #region ILateUpdateSystem
 
-        void IFixedLateUpdateSystem.OnFixedLateUpdate()
+        void ILateUpdateSystem.OnLateUpdate()
+        {
+            if (IsEnabled == false)
+            {
+                return;
+            }
+
+            CheckUnitsBounces();
+
+            DestroyUnits();
+
+            CheckWallsBounces();
+        }
+
+        #endregion
+
+        #region Private methods
+
+        private void CheckUnitsBounces()
         {
             for (int unitIndex = 0; unitIndex < _units.Items.Count; unitIndex++)
             {
-                var unit = _units.Items[unitIndex];
-                var move = _moves.GetById(unit.Id);
-               
-                var posItem = _positions.GetById(unit.Id);
-                var radiusItem = _radiuses.GetById(unit.Id);
+                var unitItem = _units.Items[unitIndex];
+                var moveItem = _moves.GetById(unitItem.Id);
+                var posItem = _positions.GetById(unitItem.Id);
+                var radiusItem = _radiuses.GetById(unitItem.Id);
 
                 var radius = radiusItem.Radius;
-
                 var pos = posItem.Position;
-
-                #region Check walls
-
-                for (int wallIndex = 0; wallIndex < _walls.Items.Count; wallIndex++)
-                {
-                    var wall = _walls.Items[wallIndex];
-
-                    var closestPoint = wall.bound.ClosestPoint(pos);
-
-                    var dist = Vector2.Distance(closestPoint, pos);
-
-                    if (dist < radius)
-                    {
-                        Vector2 dir = Vector2.Reflect(move.moveDirection, wall.normal);
-
-                        move.moveDirection = dir;
-
-                        posItem.Position += dir * (radius - dist);
-                    }
-                }
-
-                #endregion
-
-                #region Check other units
 
                 for (int otherUnitIndex = unitIndex + 1; otherUnitIndex < _units.Items.Count; otherUnitIndex++)
                 {
@@ -117,42 +120,74 @@ namespace Assets.Scripts.Features.Bounces
                     var otherPos = _positions.GetById(otherUnit.Id).Position;
                     var otherRadius = otherRadiusItem.Radius;
 
-                    var dist = Vector2.Distance(pos, otherPos);
+                    var distBetweenBalls = Vector2.Distance(pos, otherPos);
 
-                    if (dist < radius + otherRadius)
+                    if (distBetweenBalls < radius + otherRadius)
                     {
-                        if (otherUnit.type == unit.type)
+                        if (otherUnit.type == unitItem.type)
                         {
                             var otherMove = _moves.GetById(otherUnit.Id);
 
                             var direction = (pos - otherPos).normalized;
 
-                            move.moveDirection = direction;
+                            moveItem.moveDirection = direction;
                             otherMove.moveDirection = direction * -1;
                         }
-                        else
-                        {
-                            var distLack = (radius + otherRadius - dist) / 2f;
+                        //else
+                        //{
+                        //    var distLack = (radius + otherRadius - distBetweenBalls) / 2f;
 
-                            radiusItem.Radius -= distLack;
-                            otherRadiusItem.Radius -= distLack;
+                        //    radiusItem.Radius -= distLack;
+                        //    otherRadiusItem.Radius -= distLack;
 
-                            if (radius < MinBallRadius
-                                || otherRadius < MinBallRadius)
-                            {
-                                _entityToDestroyBuffer.Add(unit.Id);
-                                _entityToDestroyBuffer.Add(otherUnit.Id);
-                            }
-                        }
+                        //    if (radiusItem.Radius < MinBallRadius
+                        //        || otherRadiusItem.Radius < MinBallRadius)
+                        //    {
+                        //        _entityToDestroyBuffer.Add(unit.Id);
+                        //        _entityToDestroyBuffer.Add(otherUnit.Id);
+                        //    }
+                        //    else
+                        //    {
+                        //        bounceBoundItem.bound = _gameConfig.GetBoardSqueezeRadius(radiusItem.Radius);
+                        //        _bounds.GetById(otherUnit.Id).bound = _gameConfig.GetBoardSqueezeRadius(otherRadiusItem.Radius);
+                        //    }
+                        //}
                     }
                 }
-
-                #endregion
             }
+        }
 
-            #region Destroy units
+        private void CheckWallsBounces()
+        {
+            for (int unitIndex = 0; unitIndex < _units.Items.Count; unitIndex++)
+            {
+                var unit = _units.Items[unitIndex];
 
-            for (int i = 0; i < _entityToDestroyBuffer.Count;i++)
+                var move = _moves.GetById(unit.Id);
+                var posItem = _positions.GetById(unit.Id);
+
+                var pos = posItem.Position;
+
+                var bounceBoundItem = _bounds.GetById(unit.Id);
+
+                if (bounceBoundItem.bound.Contains(pos) == false)
+                {
+                    var closestPos = (Vector2)bounceBoundItem.bound.ClosestPoint(pos);
+
+                    var normal = (pos - closestPos).normalized;
+
+                    posItem.Position = closestPos;
+
+                    Vector2 reflectionDir = Vector2.Reflect(move.moveDirection, normal);
+
+                    move.moveDirection = reflectionDir;
+                }
+            }
+        }
+
+        private void DestroyUnits()
+        {
+            for (int i = 0; i < _entityToDestroyBuffer.Count; i++)
             {
                 var entityId = _entityToDestroyBuffer[i];
 
@@ -163,8 +198,6 @@ namespace Assets.Scripts.Features.Bounces
             }
 
             _entityToDestroyBuffer.Clear();
-
-            #endregion
         }
 
         #endregion

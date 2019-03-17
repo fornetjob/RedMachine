@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.Features.Board
 {
-    public class BoardSystem : IAttachContext, IStartSystem, IListener<BoardActionComponent>
+    public class BoardSystem : IStartSystem, IListener<BoardActionComponent>
     {
         #region Factories
 
@@ -25,13 +25,21 @@ namespace Assets.Scripts.Features.Board
 
         #endregion
 
-        #region IAttachContext
+        #region IStartSystem
 
-        void IAttachContext.Attach(Context context)
+        void IStartSystem.OnStart(Context context)
         {
             _context = context;
 
             _boardFactory = new BoardFactory(context);
+
+            Physics.autoSimulation = false;
+            Physics2D.autoSimulation = false;
+
+            _config = _context.services.serialize.GetGameConfig();
+
+            _boardFactory.Create(_config.GetBoardSize())
+                .AddListener(this);
         }
 
         #endregion
@@ -44,27 +52,13 @@ namespace Assets.Scripts.Features.Board
             {
                 case BoardActionType.Add:
                     _context.systems.Add(new UnitAddSystem());
+                    _context.systems.Get<BounceSystem>().IsEnabled = false;
                     break;
                 case BoardActionType.Move:
                     _context.systems.Add(new MoveSystem());
-                    _context.systems.Add(new BounceSystem());
+                    _context.systems.Get<BounceSystem>().IsEnabled = true;
                     break;
             }
-        }
-
-        #endregion
-
-        #region IStartSystem
-
-        void IStartSystem.OnStart()
-        {
-            Physics.autoSimulation = false;
-            Physics2D.autoSimulation = false;
-
-            _config = _context.services.serialize.GetGameConfig();
-
-            _boardFactory.Create(_config.GetBoardSize())
-                .AddListener(this);
         }
 
         #endregion

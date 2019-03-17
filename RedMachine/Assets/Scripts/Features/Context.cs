@@ -1,7 +1,11 @@
 ﻿using Assets.Scripts.Core;
 using Assets.Scripts.Features;
+using Assets.Scripts.Features.Board;
+using Assets.Scripts.Features.Bounces;
+using Assets.Scripts.Features.Cameras;
 using Assets.Scripts.Features.Events;
 using Assets.Scripts.Features.Pooling;
+using Assets.Scripts.Features.UI;
 
 public class Context
 {
@@ -16,9 +20,6 @@ public class Context
         entities = new ComponentPool<Entity>(this);
 
         services.Attach(this);
-
-        systems.Add(new EventSystem());
-        systems.Add(new PoolSystem());
     }
 
     #endregion

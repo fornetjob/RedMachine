@@ -3,7 +3,7 @@ using Assets.Scripts.Features.Times;
 
 namespace Assets.Scripts.Features.UI
 {
-    public class UISystem : IAttachContext, IStartSystem, IEventListener
+    public class UISystem : IStartSystem, IEventListener
     {
         #region Fields
 
@@ -15,14 +15,27 @@ namespace Assets.Scripts.Features.UI
 
         #endregion
 
-        #region IAttachContext
+        #region IStartSystem
 
-        void IAttachContext.Attach(Context context)
+        void IStartSystem.OnStart(Context context)
         {
             _context = context;
 
             _context.services.pool.Provide<EventListenerComponent>()
                 .Create().value = this;
+
+            //_context.services.pool.Provide<UnitComponent>()
+            //    .AddListener(_context.services.view.Attach<GameHudView>("Canvas/GameHud"));
+
+            _context.services.view.Attach<ButtonView>("Canvas/NewButton");
+            _context.services.view.Attach<ButtonView>("Canvas/LoadButton");
+            _context.services.view.Attach<ButtonView>("Canvas/SaveButton");
+
+            _timeScaleEntity = _context.entities.Create()
+                .AddListener(_context.services.view.Attach<TimeScaleView>("Canvas/TimeScale"));
+
+            _timeScaleEntity.Add<TimeScaleComponent>()
+                .Scale = _context.services.time.GetTimeScale();
         }
 
         #endregion
@@ -56,26 +69,6 @@ namespace Assets.Scripts.Features.UI
 
                     break;
             }
-        }
-
-        #endregion
-
-        #region IStartSystem
-
-        void IStartSystem.OnStart()
-        {
-            //_context.services.pool.Provide<UnitComponent>()
-            //    .AddListener(_context.services.view.Attach<GameHudView>("Canvas/GameHud"));
-
-            _context.services.view.Attach<ButtonView>("Canvas/NewButton");
-            _context.services.view.Attach<ButtonView>("Canvas/LoadButton");
-            _context.services.view.Attach<ButtonView>("Canvas/SaveButton");
-
-            _timeScaleEntity = _context.entities.Create()
-                .AddListener(_context.services.view.Attach<TimeScaleView>("Canvas/TimeScale"));
-
-            _timeScaleEntity.Add<TimeScaleComponent>()
-                .Scale = _context.services.time.GetTimeScale();
         }
 
         #endregion

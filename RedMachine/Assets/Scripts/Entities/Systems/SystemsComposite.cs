@@ -2,15 +2,15 @@
 
 namespace Assets.Scripts.Core
 {
-    public class SystemsComposite : IFixedUpdateSystem, IUpdateSystem, IFixedLateUpdateSystem
+    public class SystemsComposite : IUpdateSystem, ILateUpdateSystem
     {
         #region Fields
 
-        private readonly List<IFixedUpdateSystem>
-            _fixedUpdateSystems = new List<IFixedUpdateSystem>();
+        private readonly List<ISystem>
+            _systems = new List<ISystem>();
 
-        private readonly List<IFixedLateUpdateSystem>
-            _fixedLateUpdateSystems = new List<IFixedLateUpdateSystem>();
+        private readonly List<ILateUpdateSystem>
+            _lateUpdateSystems = new List<ILateUpdateSystem>();
 
         private readonly List<IUpdateSystem>
             _updateSystems = new List<IUpdateSystem>();
@@ -31,26 +31,24 @@ namespace Assets.Scripts.Core
 
         #region Public methods
 
+        public T Get<T>()
+            where T:ISystem
+        {
+            return (T)_systems.Find(p => p is T);
+        }
+
         public void Add(ISystem system)
         {
-            if (system is IAttachContext)
-            {
-                ((IAttachContext)system).Attach(_context);
-            }
+            _systems.Add(system);
 
             if (system is IStartSystem)
             {
-                ((IStartSystem)system).OnStart();
+                ((IStartSystem)system).OnStart(_context);
             }
 
-            if (system is IFixedLateUpdateSystem)
+            if (system is ILateUpdateSystem)
             {
-                _fixedLateUpdateSystems.Add((IFixedLateUpdateSystem)system);
-            }
-
-            if (system is IFixedUpdateSystem)
-            {
-                _fixedUpdateSystems.Add((IFixedUpdateSystem)system);
+                _lateUpdateSystems.Add((ILateUpdateSystem)system);
             }
 
             if (system is IUpdateSystem)
@@ -61,43 +59,16 @@ namespace Assets.Scripts.Core
 
         public void Remove(ISystem system)
         {
-            if (system is IFixedLateUpdateSystem)
-            {
-                _fixedLateUpdateSystems.Remove((IFixedLateUpdateSystem)system);
-            }
+            _systems.Remove(system);
 
-            if (system is IFixedUpdateSystem)
+            if (system is ILateUpdateSystem)
             {
-                _fixedUpdateSystems.Remove((IFixedUpdateSystem)system);
+                _lateUpdateSystems.Remove((ILateUpdateSystem)system);
             }
 
             if (system is IUpdateSystem)
             {
                 _updateSystems.Remove((IUpdateSystem)system);
-            }
-        }
-
-        #endregion
-
-        #region IFixedUpdateSystem
-
-        void IFixedUpdateSystem.OnFixedUpdate()
-        {
-            for (int i = 0; i < _fixedUpdateSystems.Count; i++)
-            {
-                _fixedUpdateSystems[i].OnFixedUpdate();
-            }
-        }
-
-        #endregion
-
-        #region IFixedLateUpdateSystem
-
-        void IFixedLateUpdateSystem.OnFixedLateUpdate()
-        {
-            for (int i = 0; i < _fixedLateUpdateSystems.Count; i++)
-            {
-                _fixedLateUpdateSystems[i].OnFixedLateUpdate();
             }
         }
 
@@ -110,6 +81,18 @@ namespace Assets.Scripts.Core
             for (int i = 0; i < _updateSystems.Count; i++)
             {
                 _updateSystems[i].OnUpdate();
+            }
+        }
+
+        #endregion
+
+        #region ILateUpdateSystem
+
+        void ILateUpdateSystem.OnLateUpdate()
+        {
+            for (int i = 0; i < _lateUpdateSystems.Count; i++)
+            {
+                _lateUpdateSystems[i].OnLateUpdate();
             }
         }
 

@@ -1,6 +1,6 @@
 ﻿namespace Assets.Scripts.Features.Events
 {
-    public class EventSystem : IUpdateSystem , IAttachContext
+    public class EventSystem : IUpdateSystem , IStartSystem
     {
         #region Fields
 
@@ -14,9 +14,9 @@
 
         #endregion
 
-        #region IAttachContext
+        #region IStartSystem
 
-        void IAttachContext.Attach(Context context)
+        void IStartSystem.OnStart(Context context)
         {
             _context = context;
 

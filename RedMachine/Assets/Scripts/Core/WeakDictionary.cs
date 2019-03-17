@@ -13,13 +13,13 @@ public sealed class WeakDictionary<TKey, TValue>
     /// <summary>
     /// Функция подгрузки при отсутствии элемента в словаре
     /// </summary>
-    private Func<TKey, TValue>
+    private readonly Func<TKey, TValue>
         _loadNotExistFunc;
 
     /// <summary>
     /// Словарь с элементами
     /// </summary>
-    private Dictionary<TKey, TValue>
+    private readonly Dictionary<TKey, TValue>
         _dict = new Dictionary<TKey, TValue>();
 
     #endregion

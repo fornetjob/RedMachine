@@ -83,6 +83,16 @@ public class ComponentPool<T> : IPool
         }
     }
 
+    public void RemoveListeners(int id, IListener<T>[] listeners)
+    {
+        var listenerComposite = _listeners[id];
+
+        for (int i = 0; i < listeners.Length; i++)
+        {
+            listenerComposite.RemoveListener(listeners[i]);
+        }
+    }
+
     public void ApplyChanges()
     {
         if (_changedList.Count == 0)

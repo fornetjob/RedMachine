@@ -1,7 +1,9 @@
-﻿using Assets.Scripts.Features.Object;
+﻿using Assets.Scripts.Features.Board;
+using Assets.Scripts.Features.Object;
 using Assets.Scripts.Features.Pooling;
 using Assets.Scripts.Features.Position;
 using Assets.Scripts.Features.Scale;
+using Assets.Scripts.Features.Serialize;
 using Assets.Scripts.Features.Sprites;
 using Assets.Scripts.Features.Views;
 using UnityEngine;
@@ -28,6 +30,9 @@ namespace Assets.Scripts.Features.Unit
         private readonly WeakDictionary<string, Sprite>
             _sprites;
 
+        private GameConfig
+            _gameConfig;
+
         #endregion
 
         #region ctor
@@ -40,6 +45,8 @@ namespace Assets.Scripts.Features.Unit
             _view = _context.services.view;
 
             _sprites = new WeakDictionary<string, Sprite>(path => _context.services.resources.ReadFrom<Sprite>(path));
+
+            _gameConfig = _context.services.serialize.GetGameConfig();
         }
 
         #endregion
@@ -59,6 +66,7 @@ namespace Assets.Scripts.Features.Unit
             entity.Add<GameObjectComponent>().obj = unitObj;
             entity.Add<PositionComponent>().Position = pos;
             entity.Add<RadiusComponent>().Radius = radius;
+            entity.Add<BoardSqueezeBoundComponent>().bound = _gameConfig.GetBoardSqueezeRadius(radius);
 
             var spritePath = type == UnitType.Red ? ResourcesAssets.Sprites_unitRed : ResourcesAssets.Sprites_unitBlue;
 

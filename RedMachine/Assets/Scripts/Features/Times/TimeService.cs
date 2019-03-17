@@ -6,11 +6,6 @@ namespace Assets.Scripts.Features.Times
     {
         #region Public methods
 
-        public Wait WaitTo(float seconds, bool isAutoReset)
-        {
-            return new Wait(this, seconds, isAutoReset);
-        }
-
         public void SetTimeScale(float timeScale)
         {
             Time.timeScale = timeScale;

@@ -2,7 +2,7 @@
 
 namespace Assets.Scripts.Features.Move
 {
-    public class MoveSystem : IAttachContext, IFixedUpdateSystem
+    public class MoveSystem : IStartSystem, IUpdateSystem
     {
         #region Fields
 
@@ -20,9 +20,9 @@ namespace Assets.Scripts.Features.Move
 
         #endregion
 
-        #region IAttachContext
+        #region IStartSystem
 
-        void IAttachContext.Attach(Context context)
+        void IStartSystem.OnStart(Context context)
         {
             _context = context;
 
@@ -34,10 +34,12 @@ namespace Assets.Scripts.Features.Move
 
         #endregion
 
-        #region IFixedUpdateSystem
+        #region IUpdateSystem
 
-        public void OnFixedUpdate()
+        public void OnUpdate()
         {
+            var time = _context.services.time.GetDeltaTime();
+
             for (int moveIndex = 0; moveIndex < _moves.Items.Count; moveIndex++)
             {
                 var moveItem = _moves.Items[moveIndex];
@@ -45,7 +47,7 @@ namespace Assets.Scripts.Features.Move
 
                 var speed = moveItem.speed;
 
-                posItem.Position += moveItem.moveDirection * speed * _fixedTime;
+                posItem.Position += moveItem.moveDirection * speed * time;
             }
         }
 

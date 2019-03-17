@@ -1,8 +1,11 @@
 ﻿using Assets.Scripts.Features.Cameras;
-using Assets.Scripts.Features.Serialize;
 using Assets.Scripts.Features.Board;
 using UnityEngine;
 using Assets.Scripts.Features.UI;
+using Assets.Scripts.Features.Events;
+using Assets.Scripts.Features.Bounces;
+using Assets.Scripts.Features.Pooling;
+using Assets.Scripts.Features.Times;
 
 namespace Assets.Scripts
 {
@@ -13,11 +16,8 @@ namespace Assets.Scripts
         private Context
             _context;
 
-        private IFixedLateUpdateSystem
-            _fixedLateUpdateSystem;
-
-        private IFixedUpdateSystem
-            _fixedupdateSystem;
+        private ILateUpdateSystem
+            _lateUpdateSystem;
 
         private IUpdateSystem
             _updateSystem;
@@ -30,24 +30,25 @@ namespace Assets.Scripts
         {
             _context = new Context();
 
+            _context.systems.Add(new TimeSystem());
+            _context.systems.Add(new EventSystem());
+
             _context.systems.Add(new UISystem());
             _context.systems.Add(new CameraSystem());
             _context.systems.Add(new BoardSystem());
 
-            _fixedLateUpdateSystem = _context.systems;
-            _fixedupdateSystem = _context.systems;
+            _context.systems.Add(new BounceSystem());
+            _context.systems.Add(new PoolSystem());
+
+            _lateUpdateSystem = _context.systems;
             _updateSystem = _context.systems;
         }
 
         private void Update()
         {
             _updateSystem.OnUpdate();
-        }
 
-        private void FixedUpdate()
-        {
-            _fixedupdateSystem.OnFixedUpdate();
-            _fixedLateUpdateSystem.OnFixedLateUpdate();
+            _lateUpdateSystem.OnLateUpdate();
         }
 
         #endregion
