@@ -15,15 +15,15 @@ public class IdentitiesTest
 
         var idItem = context.services.pool.Provide<IdentityComponent>().Single();
 
-        Assert.AreEqual(idItem.Identity, 1);
+        Assert.AreEqual(idItem.identity, 1);
 
         context.entities.Create();
 
-        Assert.AreEqual(idItem.Identity, 2);
+        Assert.AreEqual(idItem.identity, 2);
 
         context.entities.Create();
         context.entities.Create();
 
-        Assert.AreEqual(idItem.Identity, 4);
+        Assert.AreEqual(idItem.identity, 4);
     }
 }

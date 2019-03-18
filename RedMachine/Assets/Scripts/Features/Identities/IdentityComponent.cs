@@ -4,6 +4,6 @@
     [System.Serializable]
     public class IdentityComponent: ComponentBase
     {
-        public int Identity;
+        public int identity;
     }
 }

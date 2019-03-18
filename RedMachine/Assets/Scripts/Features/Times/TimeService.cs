@@ -6,24 +6,16 @@ namespace Assets.Scripts.Features.Times
     {
         #region Public methods
 
-        public void SetTimeScale(float timeScale)
+        public float TimeScale
         {
-            Time.timeScale = timeScale;
-        }
-
-        public float GetTimeScale()
-        {
-            return Time.timeScale;
-        }
-
-        public float GetTimeSinceLevelLoad()
-        {
-            return Time.timeSinceLevelLoad;
-        }
-
-        public float GetFixedDeltaTime()
-        {
-            return Time.fixedDeltaTime;
+            get
+            {
+                return Time.timeScale;
+            }
+            set
+            {
+                Time.timeScale = value;
+            }
         }
 
         public float GetDeltaTime()

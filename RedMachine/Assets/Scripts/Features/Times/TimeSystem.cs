@@ -1,30 +1,49 @@
 ﻿namespace Assets.Scripts.Features.Times
 {
-    public class TimeSystem : IStartSystem, IUpdateSystem
+    public class TimeSystem : SystemBase, IBeginSystem, IUpdateSystem
     {
+        #region Feilds
+
         private TimeService
             _time;
 
         private ComponentPool<WaitComponent>
             _waits;
 
-        public void OnStart(Context context)
+        #endregion
+
+        #region IBeginSystem
+
+        void IBeginSystem.OnBegin(Context context)
         {
             _time = context.services.time;
             _waits = context.services.pool.Provide<WaitComponent>();
         }
 
-        public void OnUpdate()
+        #endregion
+
+        #region IUpdateSystem
+
+        void IUpdateSystem.OnUpdate()
         {
             var deltaTime = _time.GetDeltaTime();
 
             for (int i = 0; i <_waits.Items.Count; i++)
             {
-                if (_waits.Items[i].OnTick(deltaTime) == false)
+                var item = _waits.Items[i];
+
+                if (item.IsPause)
+                {
+                    continue;
+                }
+
+                if (item.OnTick(deltaTime) == false)
                 {
                     i--;
                 }
             }
         }
+
+        #endregion
     }
 }

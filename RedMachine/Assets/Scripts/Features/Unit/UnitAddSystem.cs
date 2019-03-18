@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.Features.Unit
 {
-    public class UnitAddSystem : IStartSystem, IListener<WaitComponent>
+    public class UnitAddSystem : SystemBase, IBeginSystem, IListener<WaitComponent>
     {
         #region Services
 
@@ -43,11 +43,25 @@ namespace Assets.Scripts.Features.Unit
         private Entity
             _waitEntity;
 
+        private bool 
+            _isActive;
+
         #endregion
 
-        #region IStartSystem
+        #region Public methods
 
-        void IStartSystem.OnStart(Context context)
+        public void SetActive(bool isActive)
+        {
+            _isActive = isActive;
+
+            _waitEntity.Get<WaitComponent>().IsPause = isActive == false;
+        }
+
+        #endregion
+
+        #region IBeginSystem
+
+        void IBeginSystem.OnBegin(Context context)
         {
             _context = context;
 
@@ -78,6 +92,11 @@ namespace Assets.Scripts.Features.Unit
 
         void IListener<WaitComponent>.OnChanged(WaitComponent value)
         {
+            if (_isActive == false)
+            {
+                return;
+            }
+
             if (_units.Items.Count < _gameConfig.numUnitsToSpawn)
             {
                 var radius = _random.Range(_gameConfig.minUnitRadius, _gameConfig.maxUnitRadius);
@@ -95,9 +114,6 @@ namespace Assets.Scripts.Features.Unit
             }
             else
             {
-                _context.systems.Remove(this);
-                _waitEntity.RemoveListener(this); 
-
                 var entityPool = _context.entities;
 
                 for (int i = 0; i < _units.Items.Count; i++)
@@ -113,8 +129,8 @@ namespace Assets.Scripts.Features.Unit
                             _random.Range(_gameConfig.minUnitSpeed, _gameConfig.maxUnitSpeed));
                 }
 
-                _context.services.pool.Provide<BoardActionComponent>().Single()
-                    .Type = BoardActionType.Move;
+                _context.services.pool.Provide<BoardStateComponent>().Single()
+                    .Type = BoardStateType.Move;
             }
         }
 

@@ -2,7 +2,7 @@
 
 namespace Assets.Scripts.Features.Move
 {
-    public class MoveSystem : IStartSystem, IUpdateSystem
+    public class MoveSystem : SystemBase, IBeginSystem, IUpdateSystem
     {
         #region Fields
 
@@ -15,18 +15,19 @@ namespace Assets.Scripts.Features.Move
         private ComponentPool<PositionComponent>
             _positions;
 
-        private float
-            _fixedTime;
+        #endregion
+
+        #region Properties
+
+        public bool IsActive;
 
         #endregion
 
-        #region IStartSystem
+        #region IBeginSystem
 
-        void IStartSystem.OnStart(Context context)
+        void IBeginSystem.OnBegin(Context context)
         {
             _context = context;
-
-            _fixedTime = _context.services.time.GetFixedDeltaTime();
 
             _moves = context.services.pool.Provide<MoveComponent>();
             _positions = context.services.pool.Provide<PositionComponent>();
@@ -38,6 +39,11 @@ namespace Assets.Scripts.Features.Move
 
         public void OnUpdate()
         {
+            if (IsActive == false)
+            {
+                return;
+            }
+
             var time = _context.services.time.GetDeltaTime();
 
             for (int moveIndex = 0; moveIndex < _moves.Items.Count; moveIndex++)

@@ -1,7 +1,11 @@
-﻿namespace Assets.Scripts.Features.Scale
+﻿using UnityEngine;
+
+namespace Assets.Scripts.Features.Scale
 {
+    [System.Serializable]
     public class RadiusComponent:ComponentBase
     {
+        [SerializeField]
         private float 
             _radius;
 

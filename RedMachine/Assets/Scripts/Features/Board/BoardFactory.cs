@@ -1,4 +1,4 @@
-﻿using Assets.Scripts.Features.Scale;
+﻿using Assets.Scripts.Features.Scale;   
 using Assets.Scripts.Features.Sprites;
 using Assets.Scripts.Features.Views;
 using Assets.Scripts.Features.Resource;
@@ -44,12 +44,13 @@ namespace Assets.Scripts.Features.Board
         {
             var boardObj = new GameObject("Board");
 
-            var boardEntity = _context.entities.Create()
-                .AddListener(_view.Add<SpriteRendererView>(boardObj))
-                .AddListener(_view.Add<SpriteSizeView>(boardObj));
+            Entity boardEntity = _context.entities.Create();
 
-            boardEntity.Add<BoardActionComponent>()
-                .Type = BoardActionType.Add;
+            boardEntity.Add<BoardStateComponent>()
+                .Type = BoardStateType.Add;
+
+            boardEntity.AddListener(_view.Add<SpriteRendererView>(boardObj))
+                .AddListener(_view.Add<SpriteSizeView>(boardObj));
 
             boardEntity.Add<SpriteComponent>()
                 .Set(_resources.ReadFrom<Sprite>(ResourcesAssets.Sprites_field), -1);

@@ -2,7 +2,7 @@
 
 namespace Assets.Scripts.Features.Pooling
 {
-    public class PoolSystem : IStartSystem, ILateUpdateSystem, IListener<List<IPool>>
+    public class PoolSystem : SystemBase, IBeginSystem, IUpdateSystem, IListener<List<IPool>>
     {
         #region Fields
 
@@ -11,9 +11,9 @@ namespace Assets.Scripts.Features.Pooling
 
         #endregion
 
-        #region IStartSystem
+        #region IBeginSystem
 
-        void IStartSystem.OnStart(Context context)
+        void IBeginSystem.OnBegin(Context context)
         {
             _pools = context.services.pool.GetPools();
 
@@ -31,9 +31,9 @@ namespace Assets.Scripts.Features.Pooling
 
         #endregion
 
-        #region ILateUpdateSystem
+        #region IUpdateSystem
 
-        void ILateUpdateSystem.OnLateUpdate()
+        void IUpdateSystem.OnUpdate()
         {
             for (int i = 0; i < _pools.Count; i++)
             {

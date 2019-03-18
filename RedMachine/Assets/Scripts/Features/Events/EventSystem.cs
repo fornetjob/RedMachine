@@ -1,6 +1,6 @@
 ﻿namespace Assets.Scripts.Features.Events
 {
-    public class EventSystem : IUpdateSystem , IStartSystem
+    public class EventSystem : SystemBase, IUpdateSystem, IBeginSystem
     {
         #region Fields
 
@@ -14,9 +14,9 @@
 
         #endregion
 
-        #region IStartSystem
+        #region IBeginSystem
 
-        void IStartSystem.OnStart(Context context)
+        void IBeginSystem.OnBegin(Context context)
         {
             _context = context;
 

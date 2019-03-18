@@ -2,21 +2,21 @@
 
 namespace Assets.Scripts.Core
 {
-    public class SystemsComposite : IUpdateSystem, ILateUpdateSystem
+    public class SystemsComposite : SystemBase, IUpdateSystem
     {
         #region Fields
 
         private readonly List<ISystem>
             _systems = new List<ISystem>();
 
-        private readonly List<ILateUpdateSystem>
-            _lateUpdateSystems = new List<ILateUpdateSystem>();
-
         private readonly List<IUpdateSystem>
             _updateSystems = new List<IUpdateSystem>();
 
         private readonly Context
             _context;
+
+        private readonly SystemComparer<IUpdateSystem>
+            _updateSystemComparer = new SystemComparer<IUpdateSystem>();
 
         #endregion
 
@@ -31,6 +31,11 @@ namespace Assets.Scripts.Core
 
         #region Public methods
 
+        public bool IsExist<T>()
+        {
+            return _systems.FindIndex(p => p is T) != -1;
+        }
+
         public T Get<T>()
             where T:ISystem
         {
@@ -41,30 +46,21 @@ namespace Assets.Scripts.Core
         {
             _systems.Add(system);
 
-            if (system is IStartSystem)
+            if (system is IBeginSystem)
             {
-                ((IStartSystem)system).OnStart(_context);
-            }
-
-            if (system is ILateUpdateSystem)
-            {
-                _lateUpdateSystems.Add((ILateUpdateSystem)system);
+                ((IBeginSystem)system).OnBegin(_context);
             }
 
             if (system is IUpdateSystem)
             {
                 _updateSystems.Add((IUpdateSystem)system);
+                _updateSystems.Sort(_updateSystemComparer);
             }
         }
 
         public void Remove(ISystem system)
         {
             _systems.Remove(system);
-
-            if (system is ILateUpdateSystem)
-            {
-                _lateUpdateSystems.Remove((ILateUpdateSystem)system);
-            }
 
             if (system is IUpdateSystem)
             {
@@ -81,18 +77,6 @@ namespace Assets.Scripts.Core
             for (int i = 0; i < _updateSystems.Count; i++)
             {
                 _updateSystems[i].OnUpdate();
-            }
-        }
-
-        #endregion
-
-        #region ILateUpdateSystem
-
-        void ILateUpdateSystem.OnLateUpdate()
-        {
-            for (int i = 0; i < _lateUpdateSystems.Count; i++)
-            {
-                _lateUpdateSystems[i].OnLateUpdate();
             }
         }
 

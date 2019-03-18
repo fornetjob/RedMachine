@@ -1,6 +1,6 @@
 ﻿using Assets.Scripts.Features.Move;
 using Assets.Scripts.Features.Position;
-using Assets.Scripts.Features.Unit;
+
 using NUnit.Framework;
 
 public class ComponentPoolTest

@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.Features.Bounces
 {
-    public class BounceSystem : IStartSystem, ILateUpdateSystem
+    public class BounceSystem : SystemBase, IBeginSystem, IUpdateSystem
     {
         #region Service
 
@@ -45,7 +45,7 @@ namespace Assets.Scripts.Features.Bounces
         private ComponentPool<UnitComponent>
             _units;
 
-        private List<int> 
+        private readonly List<int> 
             _entityToDestroyBuffer = new List<int>();
 
         private GameConfig
@@ -55,13 +55,13 @@ namespace Assets.Scripts.Features.Bounces
 
         #region Properties
 
-        public bool IsEnabled;
+        public bool IsActive;
 
         #endregion
 
-        #region IStartSystem
+        #region IBeginSystem
 
-        void IStartSystem.OnStart(Context context)
+        void IBeginSystem.OnBegin(Context context)
         {
             _context = context;
 
@@ -79,11 +79,11 @@ namespace Assets.Scripts.Features.Bounces
 
         #endregion
 
-        #region ILateUpdateSystem
+        #region IUpdateSystem
 
-        void ILateUpdateSystem.OnLateUpdate()
+        void IUpdateSystem.OnUpdate()
         {
-            if (IsEnabled == false)
+            if (IsActive == false)
             {
                 return;
             }
@@ -113,45 +113,45 @@ namespace Assets.Scripts.Features.Bounces
 
                 for (int otherUnitIndex = unitIndex + 1; otherUnitIndex < _units.Items.Count; otherUnitIndex++)
                 {
-                    var otherUnit = _units.Items[otherUnitIndex];
+                    var otherUnitItem = _units.Items[otherUnitIndex];
 
-                    var otherRadiusItem = _radiuses.GetById(otherUnit.Id);
+                    var otherRadiusItem = _radiuses.GetById(otherUnitItem.Id);
 
-                    var otherPos = _positions.GetById(otherUnit.Id).Position;
+                    var otherPos = _positions.GetById(otherUnitItem.Id).Position;
                     var otherRadius = otherRadiusItem.Radius;
 
                     var distBetweenBalls = Vector2.Distance(pos, otherPos);
 
                     if (distBetweenBalls < radius + otherRadius)
                     {
-                        if (otherUnit.type == unitItem.type)
+                        if (otherUnitItem.type == unitItem.type)
                         {
-                            var otherMove = _moves.GetById(otherUnit.Id);
+                            var otherMove = _moves.GetById(otherUnitItem.Id);
 
                             var direction = (pos - otherPos).normalized;
 
                             moveItem.moveDirection = direction;
                             otherMove.moveDirection = direction * -1;
                         }
-                        //else
-                        //{
-                        //    var distLack = (radius + otherRadius - distBetweenBalls) / 2f;
+                        else
+                        {
+                            var distLack = (radius + otherRadius - distBetweenBalls) / 2f;
 
-                        //    radiusItem.Radius -= distLack;
-                        //    otherRadiusItem.Radius -= distLack;
+                            radiusItem.Radius -= distLack;
+                            otherRadiusItem.Radius -= distLack;
 
-                        //    if (radiusItem.Radius < MinBallRadius
-                        //        || otherRadiusItem.Radius < MinBallRadius)
-                        //    {
-                        //        _entityToDestroyBuffer.Add(unit.Id);
-                        //        _entityToDestroyBuffer.Add(otherUnit.Id);
-                        //    }
-                        //    else
-                        //    {
-                        //        bounceBoundItem.bound = _gameConfig.GetBoardSqueezeRadius(radiusItem.Radius);
-                        //        _bounds.GetById(otherUnit.Id).bound = _gameConfig.GetBoardSqueezeRadius(otherRadiusItem.Radius);
-                        //    }
-                        //}
+                            if (radiusItem.Radius < MinBallRadius
+                                || otherRadiusItem.Radius < MinBallRadius)
+                            {
+                                _entityToDestroyBuffer.Add(unitItem.Id);
+                                _entityToDestroyBuffer.Add(otherUnitItem.Id);
+                            }
+                            else
+                            {
+                                _bounds.GetById(unitItem.Id).bound = _gameConfig.GetBoardSqueezeRadius(radiusItem.Radius);
+                                _bounds.GetById(otherUnitItem.Id).bound = _gameConfig.GetBoardSqueezeRadius(otherRadiusItem.Radius);
+                            }
+                        }
                     }
                 }
             }

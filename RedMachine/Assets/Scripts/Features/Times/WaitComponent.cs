@@ -13,6 +13,12 @@
 
     #endregion
 
+    #region Properties
+
+    public bool IsPause;
+
+    #endregion
+
     #region Public methods
 
     public bool OnTick(float deltaTime)

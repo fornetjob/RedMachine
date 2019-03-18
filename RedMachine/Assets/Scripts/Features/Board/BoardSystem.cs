@@ -2,11 +2,12 @@
 using Assets.Scripts.Features.Serialize;
 using Assets.Scripts.Features.Move;
 using Assets.Scripts.Features.Unit;
+
 using UnityEngine;
 
 namespace Assets.Scripts.Features.Board
 {
-    public class BoardSystem : IStartSystem, IListener<BoardActionComponent>
+    public class BoardSystem : SystemBase, IBeginSystem, IListener<BoardStateComponent>
     {
         #region Factories
 
@@ -25,9 +26,9 @@ namespace Assets.Scripts.Features.Board
 
         #endregion
 
-        #region IStartSystem
+        #region IBeginSystem
 
-        void IStartSystem.OnStart(Context context)
+        void IBeginSystem.OnBegin(Context context)
         {
             _context = context;
 
@@ -46,17 +47,21 @@ namespace Assets.Scripts.Features.Board
 
         #region IListener<BoardActionComponent>
 
-        void IListener<BoardActionComponent>.OnChanged(BoardActionComponent newValue)
+        void IListener<BoardStateComponent>.OnChanged(BoardStateComponent newValue)
         {
             switch (newValue.Type)
             {
-                case BoardActionType.Add:
-                    _context.systems.Add(new UnitAddSystem());
-                    _context.systems.Get<BounceSystem>().IsEnabled = false;
+                case BoardStateType.Add:
+                    _context.systems.Get<UnitAddSystem>().SetActive(true);
+
+                    _context.systems.Get<MoveSystem>().IsActive = false;
+                    _context.systems.Get<BounceSystem>().IsActive = false;
                     break;
-                case BoardActionType.Move:
-                    _context.systems.Add(new MoveSystem());
-                    _context.systems.Get<BounceSystem>().IsEnabled = true;
+                case BoardStateType.Move:
+                    _context.systems.Get<UnitAddSystem>().SetActive(false);
+
+                    _context.systems.Get<MoveSystem>().IsActive = true;
+                    _context.systems.Get<BounceSystem>().IsActive = true;
                     break;
             }
         }

@@ -26,9 +26,9 @@
         {
             var identity = _identityPool.Single();
 
-            identity.Identity++;
+            identity.identity++;
 
-            return identity.Identity;
+            return identity.identity;
         }
 
         #endregion

@@ -2,6 +2,7 @@
 
 namespace Assets.Scripts.Features.Move
 {
+    [System.Serializable]
     public class MoveComponent : ComponentBase
     {
         public Vector2 moveDirection;

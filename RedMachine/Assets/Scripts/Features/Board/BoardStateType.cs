@@ -1,6 +1,6 @@
 ﻿namespace Assets.Scripts.Features.Board
 {
-    public enum BoardActionType
+    public enum BoardStateType
     {
         Add,
         Move

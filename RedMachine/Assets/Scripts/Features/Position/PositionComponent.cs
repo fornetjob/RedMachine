@@ -2,10 +2,12 @@
 
 namespace Assets.Scripts.Features.Position
 {
+    [System.Serializable]
     public class PositionComponent : ComponentBase
     {
         #region Fields
 
+        [SerializeField]
         private Vector2
             _pos;
 

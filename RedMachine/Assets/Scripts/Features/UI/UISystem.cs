@@ -1,9 +1,11 @@
 ﻿using Assets.Scripts.Features.Events;
 using Assets.Scripts.Features.Times;
 
+using UnityEngine.SceneManagement;
+
 namespace Assets.Scripts.Features.UI
 {
-    public class UISystem : IStartSystem, IEventListener
+    public class UISystem : SystemBase, IBeginSystem, IEventListener
     {
         #region Fields
 
@@ -15,9 +17,9 @@ namespace Assets.Scripts.Features.UI
 
         #endregion
 
-        #region IStartSystem
+        #region IBeginSystem
 
-        void IStartSystem.OnStart(Context context)
+        void IBeginSystem.OnBegin(Context context)
         {
             _context = context;
 
@@ -35,7 +37,7 @@ namespace Assets.Scripts.Features.UI
                 .AddListener(_context.services.view.Attach<TimeScaleView>("Canvas/TimeScale"));
 
             _timeScaleEntity.Add<TimeScaleComponent>()
-                .Scale = _context.services.time.GetTimeScale();
+                .Scale = _context.services.time.TimeScale;
         }
 
         #endregion
@@ -49,7 +51,7 @@ namespace Assets.Scripts.Features.UI
                 case TimeScaleView.TimeScaleChanged:
                     var timeScale = (float)e.value;
 
-                    _context.services.time.SetTimeScale(timeScale);
+                    _context.services.time.TimeScale = timeScale;
                     _timeScaleEntity.Get<TimeScaleComponent>().Scale = timeScale;
                     break;
                 case ButtonView.ButtonClick:
@@ -58,6 +60,7 @@ namespace Assets.Scripts.Features.UI
                     switch (type)
                     {
                         case ButtonActionType.New:
+                            SceneManager.LoadScene("Play");
                             break;
                         case ButtonActionType.Load:
                             _context.services.serialize.LoadGame();

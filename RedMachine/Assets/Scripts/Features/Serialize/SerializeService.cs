@@ -1,9 +1,13 @@
-﻿using Assets.Scripts.Features.Identities;
+﻿using System.Linq;
+
+using Assets.Scripts.Features.Board;
+using Assets.Scripts.Features.Identities;
 using Assets.Scripts.Features.Move;
+using Assets.Scripts.Features.Pooling;
 using Assets.Scripts.Features.Position;
-using Assets.Scripts.Features.Resource;
 using Assets.Scripts.Features.Scale;
 using Assets.Scripts.Features.Unit;
+
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -14,6 +18,20 @@ namespace Assets.Scripts.Features.Serialize
         #region Constants
 
         private const string GameSave = "GameSave";
+
+        #endregion
+
+        #region Services
+
+        private PoolService
+            _pool;
+
+        #endregion
+
+        #region Factories
+
+        private UnitFactory
+            _unitFactory;
 
         #endregion
 
@@ -32,6 +50,10 @@ namespace Assets.Scripts.Features.Serialize
         void IAttachContext.Attach(Context context)
         {
             _context = context;
+
+            _pool = _context.services.pool;
+
+            _unitFactory = new UnitFactory(context);
         }
 
         #endregion
@@ -54,11 +76,11 @@ namespace Assets.Scripts.Features.Serialize
         {
             var info = new SaveInfo
             {
-                Identity = _context.services.pool.Provide<IdentityComponent>().Single(),
-                Moves = _context.services.pool.Provide<MoveComponent>().Items.ToArray(),
-                Positions = _context.services.pool.Provide<PositionComponent>().Items.ToArray(),
-                Radiuses = _context.services.pool.Provide<RadiusComponent>().Items.ToArray(),
-                Units = _context.services.pool.Provide<UnitComponent>().Items.ToArray()
+                State = _pool.Provide<BoardStateComponent>().Single(),
+                Moves = _pool.Provide<MoveComponent>().Items.ToArray(),
+                Positions = _pool.Provide<PositionComponent>().Items.ToArray(),
+                Radiuses = _pool.Provide<RadiusComponent>().Items.ToArray(),
+                Units = _pool.Provide<UnitComponent>().Items.ToArray()
             };
 
             PlayerPrefs.SetString(GameSave, JsonUtility.ToJson(info));
@@ -72,11 +94,35 @@ namespace Assets.Scripts.Features.Serialize
                 return false;
             }
 
-            SceneManager.LoadScene("Play");
+            var units = _pool.Provide<UnitComponent>().Items;
+
+            while (units.Count > 0)
+            {
+                _context.entities.Destroy(units[0].Id);
+            }
 
             var info = (SaveInfo)JsonUtility.FromJson(PlayerPrefs.GetString(GameSave), typeof(SaveInfo));
 
-            Debug.Log(info.Identity.Id);
+            _pool.Provide<BoardStateComponent>()
+                .Single().Type = info.State.Type;
+
+            var positionDict = info.Positions.ToDictionary(p => p.Id);
+            var radiusDict = info.Radiuses.ToDictionary(p => p.Id);
+            var moveDict = info.Moves.ToDictionary(p => p.Id);
+
+            for (int i = 0; i < info.Units.Length; i++)
+            {
+                var unit = info.Units[i];
+
+                var pos = positionDict[unit.Id].Position;
+                var radius = radiusDict[unit.Id].Radius;
+
+                MoveComponent move;
+
+                moveDict.TryGetValue(unit.Id, out move);
+
+                _unitFactory.Create(unit.type, pos, radius, move);
+            }
 
             return true;
         }

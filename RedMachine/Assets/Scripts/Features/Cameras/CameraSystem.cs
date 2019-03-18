@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.Features.Cameras
 {
-    public class CameraSystem : IStartSystem, IListener<WaitComponent>
+    public class CameraSystem : SystemBase, IBeginSystem, IListener<WaitComponent>
     {
         #region Fields
 
@@ -18,9 +18,9 @@ namespace Assets.Scripts.Features.Cameras
 
         #endregion
 
-        #region IStartSystem
+        #region IBeginSystem
 
-        void IStartSystem.OnStart(Context context)
+        void IBeginSystem.OnBegin(Context context)
         {
             _config = context.services.serialize.GetGameConfig();
 

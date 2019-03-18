@@ -149,18 +149,17 @@ public class ComponentPool<T> : IPool
 
     public T Create()
     {
-        int id = -1;
-
-        if (_isIdentity)
-        {
-            id = _identity.NewId();
-        }
-
-        return Create(id);
+        return Create(-1);
     }
 
     public T Create(int id)
     {
+        if (id == -1
+            && _isIdentity)
+        {
+            id = _identity.NewId();
+        }
+
         T item;
 
         if (_destroyed.Count == 0)
@@ -190,6 +189,11 @@ public class ComponentPool<T> : IPool
         return item;
     }
 
+    public void Destroy(int id)
+    {
+        GetById(id).Destroy();
+    }
+
     public void DestroyAll()
     {
         while (Items.Count > 0)
@@ -205,6 +209,15 @@ public class ComponentPool<T> : IPool
     void IPool.Destroy(IComponent item)
     {
         T itemToDestroy = (T)item;
+
+        if (_listeners.ContainsKey(item.Id))
+        {
+            _listeners[item.Id].Clear();
+
+            _listeners.Remove(item.Id);
+        }
+
+        _changedList.Remove(item.Id);
 
         Items.Remove(itemToDestroy);
         _dict.Remove(item.Id);

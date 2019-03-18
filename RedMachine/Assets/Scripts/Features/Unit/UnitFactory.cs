@@ -1,6 +1,6 @@
 ﻿using Assets.Scripts.Features.Board;
+using Assets.Scripts.Features.Move;
 using Assets.Scripts.Features.Object;
-using Assets.Scripts.Features.Pooling;
 using Assets.Scripts.Features.Position;
 using Assets.Scripts.Features.Scale;
 using Assets.Scripts.Features.Serialize;
@@ -53,12 +53,13 @@ namespace Assets.Scripts.Features.Unit
 
         #region Public methods
 
-        public Entity Create(UnitType type, Vector2 pos, float radius)
+        public Entity Create(UnitType type, Vector2 pos, float radius, MoveComponent move = null)
         {
             var unitObj = new GameObject("Unit");
 
-            var entity = _entityPool.Create()
-                .AddListener(_view.Add<PositionView>(unitObj))
+            Entity entity = _entityPool.Create();
+
+            entity.AddListener(_view.Add<PositionView>(unitObj))
                 .AddListener(_view.Add<SpriteRendererView>(unitObj))
                 .AddListener(_view.Add<SpriteRadiusView>(unitObj));
 
@@ -72,6 +73,11 @@ namespace Assets.Scripts.Features.Unit
 
             entity.Add<SpriteComponent>()
                 .Set(_sprites[spritePath]);
+
+            if (move != null)
+            {
+                entity.Add<MoveComponent>().Set(move.moveDirection, move.speed);
+            }
 
             return entity;
         }
