@@ -31,9 +31,10 @@ namespace Assets.Scripts
 
             _context.systems.Add(new TimeSystem());
 
-            _context.systems.Add(new UISystem());
             _context.systems.Add(new CameraSystem());
+
             _context.systems.Add(new BoardSystem());
+            _context.systems.Add(new UISystem());
 
             _context.systems.Add(new UnitAddSystem());
             _context.systems.Add(new MoveSystem());

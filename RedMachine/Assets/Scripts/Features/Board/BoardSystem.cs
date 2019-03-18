@@ -58,6 +58,7 @@ namespace Assets.Scripts.Features.Board
                     _context.systems.Get<BounceSystem>().IsActive = false;
                     break;
                 case BoardStateType.Move:
+                case BoardStateType.GameEnd:
                     _context.systems.Get<UnitAddSystem>().SetActive(false);
 
                     _context.systems.Get<MoveSystem>().IsActive = true;

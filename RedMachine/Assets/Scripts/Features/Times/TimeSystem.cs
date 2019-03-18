@@ -10,6 +10,9 @@
         private ComponentPool<WaitComponent>
             _waits;
 
+        private GameTimeComponent
+            _gameTime;
+
         #endregion
 
         #region IBeginSystem
@@ -18,6 +21,8 @@
         {
             _time = context.services.time;
             _waits = context.services.pool.Provide<WaitComponent>();
+
+            _gameTime = context.services.pool.Provide<GameTimeComponent>().Create();
         }
 
         #endregion
@@ -26,7 +31,15 @@
 
         void IUpdateSystem.OnUpdate()
         {
+            var timeScale = _time.TimeScale;
             var deltaTime = _time.GetDeltaTime();
+
+            _gameTime.gameTime += deltaTime;
+
+            if (timeScale != 0)
+            {
+                _gameTime.unscaledGameTime += deltaTime / timeScale;
+            }
 
             for (int i = 0; i <_waits.Items.Count; i++)
             {

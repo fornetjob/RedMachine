@@ -64,9 +64,15 @@ public class ComponentPool<T> : IPool
 
     #endregion
 
+    #region Events
+
+    public readonly ListenerComposite<ComponentPool<T>> OnCountChanged = new ListenerComposite<ComponentPool<T>>();
+
+    #endregion
+
     #region Public methods
 
-    public void AddListeners(int id, IListener<T>[] listeners)
+    public void AddListeners(int id, params IListener<T>[] listeners)
     {
         ListenerComposite<T> listenerComposite;
 
@@ -83,7 +89,7 @@ public class ComponentPool<T> : IPool
         }
     }
 
-    public void RemoveListeners(int id, IListener<T>[] listeners)
+    public void RemoveListeners(int id, params IListener<T>[] listeners)
     {
         var listenerComposite = _listeners[id];
 
@@ -100,12 +106,17 @@ public class ComponentPool<T> : IPool
             return;
         }
 
-        if (_listeners.Count > 0)
+        for (int i = 0; i < _changedList.Count; i++)
         {
-            for (int i = 0; i < _changedList.Count; i++)
-            {
-                var id = _changedList[i];
+            var id = _changedList[i];
 
+            // list changed
+            if (id == int.MaxValue)
+            {
+                OnCountChanged.OnChanged(this);
+            }
+            else
+            {
                 ListenerComposite<T> listenerComposite;
 
                 if (_listeners.TryGetValue(id, out listenerComposite))
@@ -186,6 +197,8 @@ public class ComponentPool<T> : IPool
             _dict.Add(id, item);
         }
 
+        _changedList.Add(int.MaxValue);
+
         return item;
     }
 
@@ -223,6 +236,8 @@ public class ComponentPool<T> : IPool
         _dict.Remove(item.Id);
 
         _destroyed.Enqueue(itemToDestroy);
+
+        _changedList.Add(int.MaxValue);
     }
 
     IComponent IPool.GetById(int id)

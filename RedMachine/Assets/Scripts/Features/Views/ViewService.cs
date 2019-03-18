@@ -32,6 +32,19 @@ namespace Assets.Scripts.Features.Views
             return view;
         }
 
+        public TView[] AttachChildren<TView>(string path)
+            where TView : ViewBase
+        {
+            var children = GameObject.Find(path).GetComponentsInChildren<TView>();
+
+            for (int i = 0; i < children.Length; i++)
+            {
+                BeginView(children[i]);
+            }
+
+            return children;
+        }
+
         public TView Attach<TView>(string path)
             where TView : ViewBase
         {

@@ -6,6 +6,12 @@ namespace Assets.Scripts.Features.UI
 {
     public class GameHudView : ViewBase, IListener<ComponentPool<UnitComponent>>
     {
+        #region Constants
+
+        public const string OnGameEnd = "GameHudView_OnGameEnd";
+
+        #endregion
+
         #region Bindings
 
         [SerializeField]
@@ -45,11 +51,13 @@ namespace Assets.Scripts.Features.UI
             _redElement.gameObject.SetActive(redCount > 0);
             _blueElement.gameObject.SetActive(blueCount > 0);
 
-            if (redCount > 0
-                && blueCount > 0)
+            _redElement.flexibleWidth = redCount;
+            _blueElement.flexibleWidth = blueCount;
+
+            if (redCount == 0
+                || blueCount == 0)
             {
-                _redElement.flexibleWidth = redCount;
-                _blueElement.flexibleWidth = blueCount;
+                _eventPool.Create().Set(OnGameEnd, redCount == 0 ? UnitType.Blue : UnitType.Red);
             }
         }
 

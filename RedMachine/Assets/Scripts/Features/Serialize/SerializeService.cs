@@ -6,6 +6,7 @@ using Assets.Scripts.Features.Move;
 using Assets.Scripts.Features.Pooling;
 using Assets.Scripts.Features.Position;
 using Assets.Scripts.Features.Scale;
+using Assets.Scripts.Features.Times;
 using Assets.Scripts.Features.Unit;
 
 using UnityEngine;
@@ -76,6 +77,7 @@ namespace Assets.Scripts.Features.Serialize
         {
             var info = new SaveInfo
             {
+                GameTime = _pool.Provide<GameTimeComponent>().Single(),
                 State = _pool.Provide<BoardStateComponent>().Single(),
                 Moves = _pool.Provide<MoveComponent>().Items.ToArray(),
                 Positions = _pool.Provide<PositionComponent>().Items.ToArray(),
@@ -105,6 +107,11 @@ namespace Assets.Scripts.Features.Serialize
 
             _pool.Provide<BoardStateComponent>()
                 .Single().Type = info.State.Type;
+
+            var gameTime = _pool.Provide<GameTimeComponent>().Single();
+            
+            gameTime.gameTime = info.GameTime.gameTime;
+            gameTime.unscaledGameTime = info.GameTime.unscaledGameTime;
 
             var positionDict = info.Positions.ToDictionary(p => p.Id);
             var radiusDict = info.Radiuses.ToDictionary(p => p.Id);

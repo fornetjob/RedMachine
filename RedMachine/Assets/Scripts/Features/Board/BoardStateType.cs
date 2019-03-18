@@ -3,6 +3,7 @@
     public enum BoardStateType
     {
         Add,
-        Move
+        Move,
+        GameEnd
     }
 }

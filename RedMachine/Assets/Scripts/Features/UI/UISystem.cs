@@ -1,5 +1,7 @@
-﻿using Assets.Scripts.Features.Events;
+﻿using Assets.Scripts.Features.Board;
+using Assets.Scripts.Features.Events;
 using Assets.Scripts.Features.Times;
+using Assets.Scripts.Features.Unit;
 
 using UnityEngine.SceneManagement;
 
@@ -15,6 +17,9 @@ namespace Assets.Scripts.Features.UI
         private Entity
             _timeScaleEntity;
 
+        private GameEndView
+            _gameEndView;
+
         #endregion
 
         #region IBeginSystem
@@ -26,12 +31,16 @@ namespace Assets.Scripts.Features.UI
             _context.services.pool.Provide<EventListenerComponent>()
                 .Create().value = this;
 
-            //_context.services.pool.Provide<UnitComponent>()
-            //    .AddListener(_context.services.view.Attach<GameHudView>("Canvas/GameHud"));
+            _context.services.pool.Provide<UnitComponent>()
+                .OnCountChanged.AddListener(_context.services.view.Attach<GameHudView>("Canvas/GameHud"));
 
-            _context.services.view.Attach<ButtonView>("Canvas/NewButton");
-            _context.services.view.Attach<ButtonView>("Canvas/LoadButton");
-            _context.services.view.Attach<ButtonView>("Canvas/SaveButton");
+            _context.services.view.AttachChildren<ButtonView>("Canvas");
+
+            _gameEndView = _context.services.view.Attach<GameEndView>("Canvas/GameEnd");
+
+            var gameBoardPool = _context.services.pool.Provide<BoardStateComponent>();
+
+            gameBoardPool.AddListeners(gameBoardPool.Single().Id, _gameEndView);
 
             _timeScaleEntity = _context.entities.Create()
                 .AddListener(_context.services.view.Attach<TimeScaleView>("Canvas/TimeScale"));
@@ -48,6 +57,22 @@ namespace Assets.Scripts.Features.UI
         {
             switch (e.name)
             {
+                case GameHudView.OnGameEnd:
+
+                    var state = _context.services.pool.Provide<BoardStateComponent>().Single();
+
+                    if (state.Type == BoardStateType.Move)
+                    {
+                        state.Type = BoardStateType.GameEnd;
+                    }
+
+                    if (state.Type == BoardStateType.GameEnd)
+                    {
+                        _gameEndView.Set((UnitType)e.value,
+                            _context.services.pool.Provide<GameTimeComponent>().Single().unscaledGameTime);
+                    }
+
+                    break;
                 case TimeScaleView.TimeScaleChanged:
                     var timeScale = (float)e.value;
 
